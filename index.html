@@ -3,81 +3,155 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Font Editor</title>
-<meta name="description" content="Create your own custom font online for free. Draw letters, edit glyphs with drawing tools, preview your typeface, and export it as a TTF font.">
-<meta name="keywords" content="font editor,font maker, create a font, online font creator, custom font maker, free font editor, TTF font creator, typography">
+<title>Font Editor – Free Online Font Maker (Vector and Pixel)</title>
+<meta name="description" content="Make your own font online for free. Draw letters in vector or pixel mode, preview your typeface live, and export it as a TTF font. No sign-up needed.">
+<meta name="keywords" content="font maker, create a font, online font creator, custom font maker, free font editor, TTF font creator, typography">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="author" content="Font Editor">
 <meta name="google-site-verification" content="ZtVycQlusjRtvdn0XZOq64ukSrI-ftkZyAIsRpB0E6o" />
+<link rel="canonical" href="https://USERNAME.github.io/REPO-NAME/">
+<meta property="og:url" content="https://USERNAME.github.io/REPO-NAME/">
+<meta property="og:site_name" content="Font Editor">
+<meta property="og:image" content="https://USERNAME.github.io/REPO-NAME/og-image.png">
+<meta name="twitter:image" content="https://USERNAME.github.io/REPO-NAME/og-image.png">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Font Editor">
-<meta property="og:description" content="Draw your own font, design a typeface, and export your custom font as a TTF file.">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Font Editor">
-<meta name="twitter:description" content="A free browser-based font editor for creating custom fonts.">
+<meta property="og:title" content="Font Editor – Free Online Font Maker (Vector and Pixel)">
+<meta property="og:description" content="Draw vector or pixel letters, design a typeface, and export your custom font as a TTF file.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Font Editor – Free Online Font Maker (Vector and Pixel)">
+<meta name="twitter:description" content="A free browser-based font editor for creating and exporting custom fonts.">
 <meta name="theme-color" content="#0b0e17">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%238b9cff%27/%3E%3Ctext x=%2716%27 y=%2724%27 font-size=%2722%27 font-family=%27Georgia%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27%230b0e17%27%3EF%3C/text%3E%3C/svg%3E">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "Font Editor",
+  "url": "https://USERNAME.github.io/REPO-NAME/",
   "applicationCategory": "DesignApplication",
   "operatingSystem": "Any",
-  "description": "A free online font maker. Draw and edit characters, preview a typeface, and export a TTF font."
+  "description": "A free online font maker. Draw vector or pixel characters, preview a typeface, and export a TTF font."
+}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Is Font Editor free?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes. Font Editor is free to use, runs in your browser and needs no account or sign-up."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can I make a pixel font?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes. Switch to Pixel mode, pick a grid size and click or drag to fill squares. Vector mode gives smooth freehand lines instead."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I install my font?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Export the .ttf file. On Windows, right-click it and choose Install. On Mac, double-click it and choose Install Font."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can I turn my handwriting into a font?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Draw each letter with a mouse, finger or stylus in Vector mode, then export. Spacing and size can be adjusted per character."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Is my work uploaded anywhere?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. Drawing happens locally in your browser. Use Save project to keep an editable backup file."
+   }
+  }
+ ]
 }
 </script>
 <style>
-:root{color-scheme:dark;--bg:#0b0e17;--panel:rgba(24,29,43,.78);--panel2:#232b40;--line:#2f3850;--text:#eef2fc;--muted:#97a3bb;--accent:#8b9cff;--accent2:#c08bff;--danger:#ff7d89;--ok:#6fe0a8;--r:16px}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;color:var(--text);font:14px/1.5 Inter,system-ui,"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(900px 500px at 10% -10%,rgba(139,156,255,.18),transparent 60%),radial-gradient(800px 500px at 100% 0,rgba(192,139,255,.14),transparent 60%),var(--bg);background-attachment:fixed}
-header{max-width:1400px;margin:auto;padding:26px 22px 8px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
-.brand{display:flex;gap:14px;align-items:center}
-.logo{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font:700 28px Georgia,serif;color:#0b0e17;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 8px 24px rgba(139,156,255,.35)}
-h1{font-size:22px;margin:0;letter-spacing:-.2px}header p{margin:2px 0 0;color:var(--muted);max-width:620px}
-main{max-width:1400px;margin:auto;padding:16px 22px 22px;display:grid;grid-template-columns:minmax(260px,330px) minmax(320px,1fr);gap:20px;align-items:start}
-.panel{background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:var(--r);padding:20px;min-width:0;box-shadow:0 10px 40px rgba(0,0,0,.28)}
-aside.panel{position:sticky;top:16px}
-h2{font-size:12px;margin:0 0 12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent2);display:flex;align-items:center;gap:8px}
-h2 i{font-style:normal;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:rgba(139,156,255,.18);color:var(--accent);font-size:11px;letter-spacing:0}
-.small{font-size:12px;color:var(--muted)}
-label{display:block;color:var(--muted);font-size:12px;margin:12px 0 5px}
-input,textarea,select{width:100%;background:#0f1320;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;outline:none;transition:.15s}
-input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,156,255,.2)}
-input[type=range]{padding:0;accent-color:var(--accent);background:none;border:0;box-shadow:none}
-button{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 13px;border-radius:10px;font:inherit;cursor:pointer;transition:.15s}
-button:hover{border-color:var(--accent);transform:translateY(-1px)}
-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.tool.active{background:var(--accent);color:#0b0e17;border-color:var(--accent);font-weight:700}
-button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0b0e17;border:0;font-weight:700;box-shadow:0 6px 18px rgba(139,156,255,.3)}
+:root{color-scheme:dark;--bg:#07090f;--panel:rgba(20,25,40,.72);--panel2:#1e2538;--line:rgba(120,135,180,.22);--text:#f1f4fc;--muted:#9aa6bf;--accent:#7c8cff;--accent2:#c78bff;--danger:#ff7d89;--ok:#6fe0a8;--r:20px;--g:linear-gradient(135deg,#7c8cff,#c78bff 60%,#ff8bd0)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--text);font:15px/1.6 Inter,system-ui,"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(1000px 600px at 15% -10%,rgba(124,140,255,.25),transparent 60%),radial-gradient(900px 600px at 95% 5%,rgba(199,139,255,.2),transparent 60%),radial-gradient(800px 500px at 50% 110%,rgba(95,227,208,.1),transparent 60%),var(--bg);background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:26px 26px;-webkit-mask-image:linear-gradient(#000,transparent 65%);mask-image:linear-gradient(#000,transparent 65%)}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:12px max(22px,calc((100% - 1400px)/2 + 22px));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:rgba(7,9,15,.7);border-bottom:1px solid var(--line)}
+.topbar .actions{margin:0}
+.brand{display:flex;align-items:center;gap:11px;font:700 19px "Space Grotesk",Inter,sans-serif;letter-spacing:-.3px}
+.logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font:700 21px Georgia,serif;color:#0b0e17;background:var(--g);box-shadow:0 6px 20px rgba(124,140,255,.45)}
+.hero{text-align:center;max-width:880px;margin:0 auto;padding:68px 22px 40px;position:relative}
+.badge{display:inline-block;padding:6px 15px;border-radius:99px;border:1px solid var(--line);background:rgba(124,140,255,.1);color:#aab4ff;font-size:12.5px;font-weight:600;letter-spacing:.4px}
+h1{font:700 clamp(36px,6.4vw,68px)/1.04 "Space Grotesk",Inter,sans-serif;letter-spacing:-2px;margin:20px 0 18px}
+.grad{background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:clamp(15px,2vw,18px);max-width:660px;margin:0 auto}
+.chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:26px 0}.chips span{padding:8px 16px;border-radius:99px;background:var(--panel);border:1px solid var(--line);font-weight:500;font-size:14px}
+.cta{display:inline-block;padding:14px 30px;border-radius:14px;background:var(--g);color:#0b0e17;font-weight:700;text-decoration:none;box-shadow:0 12px 36px rgba(124,140,255,.4);transition:.2s}.cta:hover{transform:translateY(-2px);box-shadow:0 16px 46px rgba(199,139,255,.55)}
+main{max-width:1400px;margin:auto;padding:24px 22px;display:grid;grid-template-columns:minmax(260px,330px) minmax(320px,1fr);gap:22px;align-items:start;scroll-margin-top:70px}
+.panel{position:relative;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-width:0;box-shadow:0 20px 60px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05)}
+.panel:before{content:"";position:absolute;left:24px;right:24px;top:-1px;height:2px;background:var(--g);border-radius:2px;opacity:.7}
+aside.panel{position:sticky;top:76px}
+h2{font:700 12px Inter,sans-serif;margin:0 0 12px;text-transform:uppercase;letter-spacing:1.4px;color:#b9a6ff;display:flex;align-items:center;gap:9px}
+h2 i{font-style:normal;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--g);color:#0b0e17;font-size:11px;letter-spacing:0}
+.small{font-size:12.5px;color:var(--muted)}
+label{display:block;color:var(--muted);font-size:12.5px;margin:12px 0 6px;font-weight:500}
+input,textarea,select{width:100%;background:rgba(9,12,22,.8);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit;outline:none;transition:.15s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(124,140,255,.18)}
+input[type=range]{padding:0;accent-color:var(--accent2);background:none;border:0;box-shadow:none}
+button{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 14px;border-radius:12px;font:inherit;font-weight:500;cursor:pointer;transition:.15s}
+button:hover{border-color:var(--accent);background:#272f46;transform:translateY(-1px);box-shadow:0 6px 18px rgba(124,140,255,.18)}
+button:focus-visible,.cta:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+.tool.active{background:var(--g);color:#0b0e17;border-color:transparent;font-weight:700;box-shadow:0 6px 18px rgba(124,140,255,.35)}
+button.primary{background:var(--g);color:#0b0e17;border:0;font-weight:700;box-shadow:0 8px 24px rgba(124,140,255,.38)}
 button.danger{color:var(--danger)}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.sep{height:1px;background:var(--line);margin:22px 0}
-.character-list{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px;max-height:260px;overflow:auto;padding:2px}
-.char{padding:8px 0;text-align:center;font-size:16px;min-width:0;position:relative}
-.char.active{background:var(--accent);color:#0b0e17;border-color:var(--accent);font-weight:800}
-.char.done:after{content:"";position:absolute;right:4px;top:4px;width:5px;height:5px;border-radius:50%;background:var(--ok)}
-.bar{height:6px;border-radius:9px;background:#0f1320;margin-top:10px;overflow:hidden}.bar b{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--ok));transition:.3s}
-.editor-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-#currentChar{font-size:34px;font-weight:800;line-height:1.1}
-.canvas-wrap{margin-top:14px;background:#0f1320;border:1px solid var(--line);border-radius:14px;padding:10px}
-canvas#drawCanvas{display:block;width:100%;max-width:640px;margin:auto;height:auto;touch-action:none;cursor:crosshair;border-radius:9px}
-.tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.sep{height:1px;background:var(--line);margin:24px 0}
+.character-list{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px;max-height:270px;overflow:auto;padding:3px}
+.char{padding:8px 0;text-align:center;font-size:16px;min-width:0;position:relative;border-radius:10px}
+.char.active{background:var(--g);color:#0b0e17;border-color:transparent;font-weight:800}
+.char.done:after{content:"";position:absolute;right:4px;top:4px;width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.bar{height:7px;border-radius:9px;background:rgba(9,12,22,.9);margin-top:12px;overflow:hidden}.bar b{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--ok));box-shadow:0 0 12px var(--accent);transition:.3s}
+.editor-top{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#currentChar{font:700 52px/1 "Space Grotesk",Inter,sans-serif;background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.canvas-wrap{margin-top:16px;background:rgba(9,12,22,.9);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 0 0 1px rgba(124,140,255,.12),0 24px 70px rgba(124,140,255,.12)}
+canvas#drawCanvas{display:block;width:100%;max-width:640px;margin:auto;height:auto;touch-action:none;cursor:crosshair;border-radius:11px}
+.tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;align-items:center;background:rgba(9,12,22,.55);border:1px solid var(--line);border-radius:16px;padding:10px}
 .tools label{margin:0;display:flex;align-items:center;gap:7px;color:var(--text)}
-.tools input[type=range]{width:100px}.tools input[type=checkbox]{width:auto;accent-color:var(--accent)}
-.preview{margin-top:26px}.preview textarea{min-height:84px;resize:vertical;font-size:18px}
-.preview-output{margin-top:10px;min-height:96px;background:#0f1320;border:1px solid var(--line);border-radius:12px;padding:16px;overflow-wrap:anywhere;font-size:28px;line-height:1.5}
-.status{margin-top:12px;color:var(--muted);font-size:12px;min-height:18px}
-footer{max-width:1400px;margin:0 auto;padding:0 22px 28px;color:var(--muted);font-size:12px}
-@media(max-width:860px){main{grid-template-columns:1fr;padding:12px}aside.panel{position:static}header{padding:18px 14px 4px}}
+.tools input[type=range]{width:100px}.tools input[type=checkbox]{width:auto;accent-color:var(--accent2)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(9,12,22,.8)}.seg button{border:0;border-radius:0;background:transparent;padding:9px 20px}.seg button.active{background:var(--g);color:#0b0e17;font-weight:700}.seg button:hover{transform:none;box-shadow:none}
+#gridWrap[hidden],#softWrap[hidden]{display:none}
+.preview{margin-top:28px}.preview textarea{min-height:84px;resize:vertical;font-size:18px}
+.preview-output{margin-top:12px;min-height:100px;background:rgba(9,12,22,.9);border:1px solid var(--line);border-radius:14px;padding:18px;overflow-wrap:anywhere;font-size:30px;line-height:1.5}
+.status{margin-top:12px;color:var(--muted);font-size:12.5px;min-height:18px}
+.info{max-width:1400px;margin:0 auto;padding:10px 22px 24px}.info .panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:34px;padding:30px}
+.info h2{font:700 21px "Space Grotesk",Inter,sans-serif;text-transform:none;letter-spacing:-.3px;color:var(--text);display:block;margin-bottom:12px}.info p,.info li{color:var(--muted)}.info ol{padding-left:22px;margin:0}.info li{margin-bottom:8px}.info li::marker{color:var(--accent2);font-weight:700}
+details{border-bottom:1px solid var(--line);padding:11px 0}summary{cursor:pointer;color:var(--text);font-weight:600}details p{margin:8px 0 2px}
+footer{max-width:1400px;margin:0 auto;padding:26px 22px 44px;color:var(--muted);font-size:13px;text-align:center;border-top:1px solid var(--line)}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#2a3350;border-radius:9px}
+@media(max-width:860px){main{grid-template-columns:1fr;padding:14px}aside.panel{position:static}.hero{padding-top:44px}.topbar{padding:10px 14px}}
 </style>
 </head>
 <body>
-<header>
-  <div class="brand"><div class="logo">F</div><div><h1>Font Foundry</h1><p>Free online font maker. Draw letters, preview your typeface live, and export it as a TTF file.</p></div></div>
-  <div class="actions" style="margin:0"><button id="loadProject">Load project</button><button id="saveProject">Save project</button><button id="exportBtn" class="primary">Export font (.ttf)</button><input id="projectFile" type="file" accept=".json,application/json" hidden></div>
-</header>
-<main>
+<div class="topbar"><div class="brand"><div class="logo">F</div>Font Editor</div>
+  <div class="actions"><button id="loadProject">Load project</button><button id="saveProject">Save project</button><button id="exportBtn" class="primary">Export font (.ttf)</button><input id="projectFile" type="file" accept=".json,application/json" hidden></div></div>
+<section class="hero"><span class="badge">Free · No sign-up · Exports TTF</span>
+  <h1>Font Editor: <span class="grad">make your own font online</span></h1>
+  <p>A free online font maker. Draw letters with vector, pixel or raster tools, preview your typeface live, and export it as a TTF file.</p>
+  <div class="chips"><span>✒ Vector</span><span>▦ Pixel</span><span>🖌 Raster</span><span>⇩ TTF export</span></div>
+  <a class="cta" href="#editor">Start drawing ↓</a></section>
+<main id="editor">
   <aside class="panel">
     <h2><i>1</i>Typeface</h2>
     <label for="fontName">Font name</label><input id="fontName" value="MyCustomFont" maxlength="40">
@@ -99,6 +173,7 @@ footer{max-width:1400px;margin:0 auto;padding:0 22px 28px;color:var(--muted);fon
   <section class="panel">
     <div class="editor-top"><div><h2 style="margin:0 0 4px">Drawing editor</h2><div id="currentChar">A</div></div><div class="small">Draw with mouse, touch, or stylus</div></div>
     <div class="canvas-wrap"><canvas id="drawCanvas" width="700" height="700"></canvas></div>
+    <div class="tools"><div class="seg" role="group" aria-label="Drawing mode"><button id="modeVector" class="active">Vector</button><button id="modePixel">Pixel</button><button id="modeRaster">Raster</button></div><label id="gridWrap" hidden>Pixel size <select id="gridSize" style="width:auto"><option value="20">Fine</option><option value="30" selected>Medium</option><option value="50">Chunky</option></select></label><label id="softWrap" hidden>Softness <input id="soft" type="range" min="0" max="100" value="15" style="width:90px"></label></div>
     <div class="tools">
       <button class="tool active" data-tool="pen">✎ Pen</button>
       <button class="tool" data-tool="eraser">⌫ Eraser</button>
@@ -129,6 +204,10 @@ jumps over 123.</textarea>
     <div class="status" id="status">Ready. Start by drawing the selected character.</div>
   </section>
 </main>
+<section class="info" aria-label="About Font Editor"><div class="panel">
+<div><h2>Make your own font online for free</h2><ol><li><b>Pick a character set</b> and give your font a name.</li><li><b>Choose Vector or Pixel mode</b> and draw each character in the editor.</li><li><b>Adjust spacing</b> with the character width slider and check the live preview.</li><li><b>Export a TTF file</b> and install it on your computer.</li></ol></div>
+<div><h2>Vector, pixel or raster font?</h2><p>Vector mode gives smooth, hand-drawn letters, great for handwriting and script styles. Pixel mode snaps everything to a grid for retro, blocky fonts. Raster mode paints onto a bitmap like a paint program, so you can erase part of a stroke, and it is converted to outlines when you export.</p><h2 style="margin-top:18px">Install your font</h2><p>On Windows, right-click the .ttf file and choose Install. On Mac, double-click it and choose Install Font. It then shows up in Word, Photoshop, Canva desktop and other apps.</p></div>
+<div><h2>FAQ</h2><details><summary>Is Font Editor free?</summary><p>Yes. Font Editor is free to use, runs in your browser and needs no account or sign-up.</p></details><details><summary>Can I make a pixel font?</summary><p>Yes. Switch to Pixel mode, pick a grid size and click or drag to fill squares. Vector mode gives smooth freehand lines instead.</p></details><details><summary>How do I install my font?</summary><p>Export the .ttf file. On Windows, right-click it and choose Install. On Mac, double-click it and choose Install Font.</p></details><details><summary>Can I turn my handwriting into a font?</summary><p>Draw each letter with a mouse, finger or stylus in Vector mode, then export. Spacing and size can be adjusted per character.</p></details><details><summary>Is my work uploaded anywhere?</summary><p>No. Drawing happens locally in your browser. Use Save project to keep an editable backup file.</p></details></div></div></section>
 <footer>Everything happens locally in your browser. TTF export loads the OpenType.js library from a CDN, so you need an internet connection to export. Save your project JSON regularly as an editable backup.</footer>
 <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
 <script>
@@ -139,8 +218,18 @@ const basic="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,!?
 let chars=[...basic],selected='A',glyphs={},history=[],drawing=false,currentStroke=null;
 let mirrorStroke=null,activeTool='pen',shapeStart=null,shapePreview=null;
 const $=id=>document.getElementById(id);
-const blank=()=>({strokes:[]});
-function ensure(c){if(!glyphs[c])glyphs[c]=blank();return glyphs[c]}
+const N=700,rc=document.createElement('canvas');rc.width=rc.height=N;const rctx=rc.getContext('2d');
+class Bits extends Uint8Array{toJSON(){const o=[];let v=this[0],n=0;for(let i=0;i<this.length;i++){if(this[i]===v)n++;else{o.push(v,n);v=this[i];n=1}}o.push(v,n);return{rle:o.join(',')}}}
+function revive(g){const b=new Bits(N*N),a=String(g.bits.rle).split(',').map(Number);let i=0;for(let k=0;k<a.length;k+=2){if(a[k])b.fill(a[k],i,i+a[k+1]);i+=a[k+1]}g.bits=b}
+function warp(b,f){const o=new Bits(N*N);for(let j=0;j<N;j++)for(let i=0;i<N;i++){const[a,c]=f(i,j);if(a>=0&&a<N&&c>=0&&c<N)o[j*N+i]=b[c*N+a]}return o}
+function bbox(b){let x0=N,x1=-1,y0=N,y1=-1;for(let k=0;k<b.length;k++)if(b[k]>127){const i=k%N,j=(k/N)|0;if(i<x0)x0=i;if(i>x1)x1=i;if(j<y0)y0=j;if(j>y1)y1=j}return{x0,x1,y0,y1}}
+function runs(b){const o=[];let act=new Map();for(let j=0;j<=N;j++){const cur=new Map();if(j<N){for(let i=0;i<N;){if(b[j*N+i]>127){const st=i;while(i<N&&b[j*N+i]>127)i++;const k=st+','+(i-st),r=act.get(k)||[st,j,i-st,0];r[3]++;cur.set(k,r)}else i++}}for(const[k,r]of act)if(!cur.has(k))o.push(r);act=cur}return o}
+function toCanvas(b){const im=rctx.createImageData(N,N),u=new Uint32Array(im.data.buffer);for(let i=0;i<b.length;i++)if(b[i])u[i]=((b[i]<<24)|0xFFF4F2)>>>0;rctx.putImageData(im,0,0);return rc}
+function stamp(b,x,y,r,f,erase){const R=r+f;for(let j=Math.max(0,Math.floor(y-R));j<=Math.min(N-1,Math.ceil(y+R));j++)for(let i=Math.max(0,Math.floor(x-R));i<=Math.min(N-1,Math.ceil(x+R));i++){const a=Math.max(0,Math.min(1,(r-Math.hypot(i+.5-x,j+.5-y))/f+.5));if(!a)continue;const k=j*N+i;b[k]=erase?Math.round(b[k]*(1-a)):Math.max(b[k],Math.round(a*255))}}
+let mode='vector',cell=30;
+const blank=()=>({strokes:[],cells:[]});
+const has=g=>!!(g&&((g.strokes&&g.strokes.length)||(g.cells&&g.cells.length)||(g.bits&&g.bits.some(v=>v))));
+function ensure(c){if(!glyphs[c])glyphs[c]=blank();const g=glyphs[c];if(!g.strokes)g.strokes=[];if(!g.cells)g.cells=[];if(g.bits&&!(g.bits instanceof Bits))revive(g);return g}
 function setStatus(s){status.textContent=s}
 function drawGuides(){
  ctx.clearRect(0,0,700,700);ctx.fillStyle='#141a28';ctx.fillRect(0,0,700,700);
@@ -149,14 +238,17 @@ function drawGuides(){
  ctx.fillStyle='#77859d';ctx.font='13px Arial';ctx.fillText('Top',42,82);ctx.fillText('Baseline',42,502);ctx.fillText('Descender',42,602);
   const h=(ensure(selected).advance||700)*.35;ctx.strokeStyle='#8b9cff';ctx.globalAlpha=.45;ctx.setLineDash([3,6]);[350-h,350+h].forEach(x=>{ctx.beginPath();ctx.moveTo(x,20);ctx.lineTo(x,680);ctx.stroke()});ctx.setLineDash([]);ctx.globalAlpha=1;}
  const g=ensure(selected);
+ if(mode==='pixel'&&$('guides').checked){ctx.strokeStyle='rgba(139,156,255,.13)';ctx.lineWidth=1;ctx.beginPath();for(let x=350%cell;x<=700;x+=cell){ctx.moveTo(x,0);ctx.lineTo(x,700)}for(let y=510%cell;y<=700;y+=cell){ctx.moveTo(0,y);ctx.lineTo(700,y)}ctx.stroke()}
+ ctx.fillStyle='#f2f4ff';for(const k of g.cells)ctx.fillRect(k.x,k.y,k.s,k.s);
+ if(g.bits)ctx.drawImage(toCanvas(g.bits),0,0)
  ctx.lineCap='round';ctx.lineJoin='round';
  for(const stroke of g.strokes){if(!stroke.points?.length)continue;ctx.strokeStyle=stroke.color;ctx.lineWidth=stroke.width;ctx.beginPath();ctx.moveTo(stroke.points[0].x,stroke.points[0].y);for(let i=1;i<stroke.points.length;i++)ctx.lineTo(stroke.points[i].x,stroke.points[i].y);if(stroke.points.length===1){ctx.lineTo(stroke.points[0].x+.1,stroke.points[0].y+.1)}ctx.stroke();}
  if(shapePreview){ctx.save();ctx.strokeStyle=shapePreview.color;ctx.lineWidth=shapePreview.width;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(shapePreview.points[0].x,shapePreview.points[0].y);shapePreview.points.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke();ctx.restore();}
 }
 function renderList(){
  list.innerHTML='';
- chars.forEach(c=>{const b=document.createElement('button');b.className='char'+(c===selected?' active':'')+(glyphs[c]?.strokes?.length?' done':'');b.textContent=c===' '?'␠':c;b.title=c===' '?'Space':c;b.onclick=()=>selectChar(c);list.appendChild(b)});
- const count=chars.filter(c=>glyphs[c]?.strokes?.length).length;
+ chars.forEach(c=>{const b=document.createElement('button');b.className='char'+(c===selected?' active':'')+(has(glyphs[c])?' done':'');b.textContent=c===' '?'␠':c;b.title=c===' '?'Space':c;b.onclick=()=>selectChar(c);list.appendChild(b)});
+ const count=chars.filter(c=>has(glyphs[c])).length;
  $('progress').textContent=`${count} of ${chars.length} characters drawn`;$('bar').style.width=(chars.length?count/chars.length*100:0)+'%';
 }
 function selectChar(c){selected=c;history=[];$('currentChar').textContent=c===' '?'Space':c;$('advance').value=ensure(c).advance||700;$('advanceValue').textContent=$('advance').value;drawGuides();renderList();updatePreview()}
@@ -164,6 +256,9 @@ function saveHistory(){history.push(JSON.stringify(ensure(selected)));if(history
 function point(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*700/r.width,y:(e.clientY-r.top)*700/r.height}}
 const mir=p=>({x:700-p.x,y:p.y});
 function smoothPts(pts){if(pts.length<4)return pts;let a=pts;for(let k=0;k<2;k++)a=a.map((p,i)=>i===0||i===a.length-1?p:{x:(a[i-1].x+p.x*2+a[i+1].x)/4,y:(a[i-1].y+p.y*2+a[i+1].y)/4});return a}
+function cellAt(p){const col=Math.floor((p.x-350)/cell),row=Math.floor((510-p.y)/cell);return{x:350+col*cell,y:510-(row+1)*cell,s:cell}}
+function paintPath(pts,erase){const g=ensure(selected),m=$('mirror').checked;
+ if(mode==='raster'){const b=g.bits||(g.bits=new Bits(N*N)),lw=+$('lineWidth').value,r=erase?Math.max(8,lw*.9):Math.max(1.5,lw/2),f=Math.max(1,(+$('soft').value/100)*r),sp=Math.max(1,r*.25);for(let i=0;i<pts.length-1||i===0;i++){const a=pts[i],e=pts[i+1]||a,n=Math.ceil(Math.hypot(e.x-a.x,e.y-a.y)/sp)||1;for(let t=0;t<=n;t++){const x=a.x+(e.x-a.x)*t/n,y=a.y+(e.y-a.y)*t/n;stamp(b,x,y,r,f,erase);if(m)stamp(b,700-x,y,r,f,erase)}}drawGuides();return}for(let i=0;i<pts.length-1||i===0;i++){const a=pts[i],b=pts[i+1]||a,n=Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/(cell/2))||1;for(let t=0;t<=n;t++){const k=cellAt({x:a.x+(b.x-a.x)*t/n,y:a.y+(b.y-a.y)*t/n});for(const q of m?[k,{x:700-k.x-k.s,y:k.y,s:k.s}]:[k]){const cx=q.x+q.s/2,cy=q.y+q.s/2;g.cells=g.cells.filter(o=>!(o.x<=cx&&cx<o.x+o.s&&o.y<=cy&&cy<o.y+o.s));if(!erase)g.cells.push(q)}}}drawGuides()}
 function shapePoints(a,b,tool){
  const left=Math.min(a.x,b.x),right=Math.max(a.x,b.x),top=Math.min(a.y,b.y),bottom=Math.max(a.y,b.y);
  if(tool==='line')return [a,b];
@@ -173,6 +268,7 @@ function shapePoints(a,b,tool){
 }
 canvas.addEventListener('pointerdown',e=>{
  e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=point(e);
+ if(mode!=='vector'){saveHistory();drawing=true;shapeStart=p;if(activeTool==='pen'||activeTool==='eraser')paintPath([p,p],activeTool==='eraser');else shapePreview={points:[p,p],color:'#8b9cff',width:2};drawGuides();return}
  if(activeTool==='eraser'){
   saveHistory();const g=ensure(selected);const rad=Math.max(18,+$('lineWidth').value*1.8),pm=mir(p),hit=q=>Math.hypot(q.x-p.x,q.y-p.y)<rad||($('mirror').checked&&Math.hypot(q.x-pm.x,q.y-pm.y)<rad);g.strokes=g.strokes.filter(s=>!s.points.some(hit));
   drawGuides();renderList();updatePreview();return;
@@ -185,11 +281,13 @@ canvas.addEventListener('pointerdown',e=>{
 });
 canvas.addEventListener('pointermove',e=>{
  if(!drawing)return;const p=point(e);
+ if(mode!=='vector'){if(activeTool==='pen'||activeTool==='eraser'){paintPath([shapeStart,p],activeTool==='eraser');shapeStart=p}else{shapePreview={points:shapePoints(shapeStart,p,activeTool),color:'#8b9cff',width:2};drawGuides()}return}
  if(activeTool==='pen'){currentStroke.points.push(p);if(mirrorStroke)mirrorStroke.points.push(mir(p))}
  else {shapePreview={points:shapePoints(shapeStart,p,activeTool),color:currentStroke.color,width:currentStroke.width};}
  drawGuides();
 });
 function stop(e){
+ if(drawing&&mode!=='vector'){if(activeTool!=='pen'&&activeTool!=='eraser'&&shapeStart)paintPath(shapePoints(shapeStart,e?point(e):shapeStart,activeTool),false);drawing=false;currentStroke=null;shapeStart=null;shapePreview=null;drawGuides();renderList();updatePreview();return}
  if(drawing&&activeTool==='pen'&&$('smooth').checked){currentStroke.points=smoothPts(currentStroke.points);if(mirrorStroke)mirrorStroke.points=smoothPts(mirrorStroke.points)}
  if(drawing&&activeTool!=='pen'&&shapeStart){const p=e?point(e):shapeStart,pts=shapePoints(shapeStart,p,activeTool),g=ensure(selected);g.strokes.push({points:pts,color:currentStroke.color,width:currentStroke.width});if($('mirror').checked)g.strokes.push({points:pts.map(mir),color:currentStroke.color,width:currentStroke.width})}
  mirrorStroke=null;
@@ -201,11 +299,11 @@ $('undoBtn').onclick=()=>{if(!history.length)return;glyphs[selected]=JSON.parse(
 $('clearBtn').onclick=()=>{saveHistory();glyphs[selected]=blank();drawGuides();renderList();updatePreview();setStatus('Character cleared.')};
 $('guides').onchange=drawGuides;
 $('lineWidth').oninput=()=> $('lineWidthValue').textContent=$('lineWidth').value;
-function transformGlyph(fn){saveHistory();const g=ensure(selected);g.strokes.forEach(s=>s.points=s.points.map(fn));drawGuides();renderList();updatePreview()}
-$('flipH').onclick=()=>transformGlyph(p=>({x:700-p.x,y:p.y}));
-$('flipV').onclick=()=>transformGlyph(p=>({x:p.x,y:700-p.y}));
-$('centerGlyph').onclick=()=>{const pts=ensure(selected).strokes.flatMap(s=>s.points);if(!pts.length)return;const minX=Math.min(...pts.map(p=>p.x)),maxX=Math.max(...pts.map(p=>p.x)),minY=Math.min(...pts.map(p=>p.y)),maxY=Math.max(...pts.map(p=>p.y));const dx=350-(minX+maxX)/2,dy=430-(minY+maxY)/2;transformGlyph(p=>({x:p.x+dx,y:p.y+dy}))};
-function scaleGlyph(f){const pts=ensure(selected).strokes.flatMap(s=>s.points);if(!pts.length)return;const cx=pts.reduce((n,p)=>n+p.x,0)/pts.length,cy=pts.reduce((n,p)=>n+p.y,0)/pts.length;transformGlyph(p=>({x:cx+(p.x-cx)*f,y:cy+(p.y-cy)*f}))}
+function transformGlyph(fn,cf,bf){saveHistory();const g=ensure(selected);g.strokes.forEach(s=>s.points=s.points.map(fn));if(cf)g.cells=g.cells.map(cf);if(bf&&g.bits)g.bits=bf(g.bits);drawGuides();renderList();updatePreview()}
+$('flipH').onclick=()=>transformGlyph(p=>({x:700-p.x,y:p.y}),k=>({...k,x:700-k.x-k.s}),r=>warp(r,(i,j)=>[N-1-i,j]));
+$('flipV').onclick=()=>{const c=ensure(selected).cells,t=Math.min(...c.map(k=>k.y)),b=Math.max(...c.map(k=>k.y+k.s));const gb=ensure(selected).bits,bb=gb?bbox(gb):{y0:0,y1:N-1};transformGlyph(p=>({x:p.x,y:700-p.y}),k=>({...k,y:t+b-k.y-k.s}),r=>warp(r,(i,j)=>[i,bb.y0+bb.y1-j]))};
+$('centerGlyph').onclick=()=>{const g0=ensure(selected),pts=g0.strokes.flatMap(s=>s.points).concat(g0.cells.flatMap(k=>[{x:k.x,y:k.y},{x:k.x+k.s,y:k.y+k.s}])).concat(g0.bits&&g0.bits.some(v=>v)?(bb=>[{x:bb.x0,y:bb.y0},{x:bb.x1+1,y:bb.y1+1}])(bbox(g0.bits)):[]);if(!pts.length)return;const minX=Math.min(...pts.map(p=>p.x)),maxX=Math.max(...pts.map(p=>p.x)),minY=Math.min(...pts.map(p=>p.y)),maxY=Math.max(...pts.map(p=>p.y));const dx=350-(minX+maxX)/2,dy=430-(minY+maxY)/2;transformGlyph(p=>({x:p.x+dx,y:p.y+dy}),k=>({...k,x:k.x+Math.round(dx/k.s)*k.s,y:k.y+Math.round(dy/k.s)*k.s}),r=>warp(r,(i,j)=>[i-Math.round(dx),j-Math.round(dy)]))};
+function scaleGlyph(f){const pts=ensure(selected).strokes.flatMap(s=>s.points);if(!pts.length){const gb=ensure(selected).bits;if(gb&&gb.some(v=>v)){const bb=bbox(gb),cx=(bb.x0+bb.x1)/2,cy=(bb.y0+bb.y1)/2;transformGlyph(p=>p,null,r=>warp(r,(i,j)=>[Math.round(cx+(i-cx)/f),Math.round(cy+(j-cy)/f)]));return}if(ensure(selected).cells.length)setStatus('Pixel drawings cannot be scaled. Try a different pixel size instead.');return}const cx=pts.reduce((n,p)=>n+p.x,0)/pts.length,cy=pts.reduce((n,p)=>n+p.y,0)/pts.length;transformGlyph(p=>({x:cx+(p.x-cx)*f,y:cy+(p.y-cy)*f}))}
 $('scaleUp').onclick=()=>scaleGlyph(1.12);$('scaleDown').onclick=()=>scaleGlyph(.88);
 $('advance').oninput=()=>{$('advanceValue').textContent=$('advance').value;ensure(selected).advance=+$('advance').value;drawGuides();updatePreview()};
 $('prevChar').onclick=()=>selectChar(chars[Math.max(0,chars.indexOf(selected)-1)]);
@@ -216,18 +314,20 @@ function updatePreview(){
  const out=$('previewOutput');out.innerHTML='';const K=2;
  for(const ch of $('previewText').value){if(ch==='\n'){out.appendChild(document.createElement('br'));continue}
   const g=glyphs[ch];
-  if(g&&g.strokes.length){const adv=g.advance||700,c=document.createElement('canvas');c.width=adv*.12*K;c.height=120*K;c.style.height='1.45em';c.style.width='auto';c.style.verticalAlign='middle';
+  if(has(g)){const adv=g.advance||700,c=document.createElement('canvas');c.width=adv*.12*K;c.height=120*K;c.style.height='1.45em';c.style.width='auto';c.style.verticalAlign='middle';
    const x=c.getContext('2d');x.scale(K,K);x.strokeStyle='#eef2fc';x.fillStyle='#eef2fc';x.lineCap='round';x.lineJoin='round';
    const px=p=>(p.x-350)*.12/.7+adv*.06,py=p=>p.y*120/700;
    for(const s of g.strokes){x.lineWidth=Math.max(1,s.width*.12/.7);x.beginPath();s.points.forEach((p,i)=>i?x.lineTo(px(p),py(p)):x.moveTo(px(p),py(p)));if(s.points.length===1)x.lineTo(px(s.points[0])+.1,py(s.points[0]));x.stroke()}
+   for(const k of g.cells)x.fillRect(px({x:k.x}),py({y:k.y}),k.s*.12/.7,k.s*120/700);
+   if(g.bits){x.imageSmoothingQuality='high';x.drawImage(toCanvas(g.bits),px({x:0}),0,120,120)}
    out.appendChild(c)
   }else{const span=document.createElement('span');span.textContent=ch===' '?'\u00a0\u00a0':ch;span.style.opacity='.35';out.appendChild(span)}
  }
 }
-function project(){return {version:1,fontName:$('fontName').value,chars,glyphs}}
+function project(){return {version:2,fontName:$('fontName').value,chars,glyphs,mode,cell}}
 $('saveProject').onclick=()=>{const blob=new Blob([JSON.stringify(project())],{type:'application/json'});download(blob,($('fontName').value||'font')+'.fontproject.json');setStatus('Project saved.')};
 $('loadProject').onclick=()=>$('projectFile').click();
-$('projectFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JSON.parse(await f.text());chars=p.chars;glyphs=p.glyphs;$('fontName').value=p.fontName||'MyCustomFont';selectChar(chars[0]||'A');setStatus('Project loaded.')}catch(err){setStatus('Could not load that project file.')}e.target.value=''};
+$('projectFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JSON.parse(await f.text());chars=p.chars;glyphs=p.glyphs;for(const c in glyphs)ensure(c);mode=p.mode||'vector';cell=p.cell||30;syncMode();$('fontName').value=p.fontName||'MyCustomFont';selectChar(chars[0]||'A');setStatus('Project loaded.')}catch(err){setStatus('Could not load that project file.')}e.target.value=''};
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function glyphPath(g){
  const path=new opentype.Path(),adv=g.advance||700;
@@ -241,6 +341,8 @@ function glyphPath(g){
   // Every piece is wound the same way, so overlaps merge into one solid stroke.
   pts.forEach((p,i)=>{dot(p,r);if(i){const a=pts[i-1],dx=p.x-a.x,dy=p.y-a.y,d=Math.hypot(dx,dy)||1,nx=-dy/d*r,ny=dx/d*r;poly([{x:a.x-nx,y:a.y-ny},{x:p.x-nx,y:p.y-ny},{x:p.x+nx,y:p.y+ny},{x:a.x+nx,y:a.y+ny}])}});
  }
+ for(const k of g.cells||[]){const xl=(k.x-350)/.7+adv/2-.5,xr=(k.x+k.s-350)/.7+adv/2+.5,yt=(510-k.y)/.7+.5,yb=(510-k.y-k.s)/.7-.5;poly([{x:xl,y:yb},{x:xr,y:yb},{x:xr,y:yt},{x:xl,y:yt}])}
+ if(g.bits)for(const[i,j,w,h]of runs(g.bits)){const xl=(i-350)/.7+adv/2-.3,xr=(i+w-350)/.7+adv/2+.3,yt=(510-j)/.7+.3,yb=(510-j-h)/.7-.3;poly([{x:xl,y:yb},{x:xr,y:yb},{x:xr,y:yt},{x:xl,y:yt}])}
  return path;
 }
 $('exportBtn').onclick=()=>{
@@ -256,7 +358,12 @@ $('exportBtn').onclick=()=>{
   download(new Blob([font.toArrayBuffer()],{type:'font/ttf'}),name+'.ttf');setStatus('Font exported! Install the TTF file to use it in other apps.');
  }catch(err){console.error(err);setStatus('Export failed: '+err.message)}
 };
-selectChar('A');drawGuides();renderList();updatePreview();
+function syncMode(){$('modeVector').classList.toggle('active',mode==='vector');$('modePixel').classList.toggle('active',mode==='pixel');$('modeRaster').classList.toggle('active',mode==='raster');$('gridWrap').hidden=mode!=='pixel';$('softWrap').hidden=mode!=='raster';$('gridSize').value=cell;canvas.style.cursor=mode==='pixel'?'cell':'crosshair';drawGuides()}
+$('modeVector').onclick=()=>{mode='vector';syncMode();setStatus('Vector mode: smooth freehand strokes.')};
+$('modePixel').onclick=()=>{mode='pixel';syncMode();setStatus('Pixel mode: click or drag to fill squares.')};
+$('modeRaster').onclick=()=>{mode='raster';syncMode();setStatus('Raster mode: soft anti-aliased painting on a bitmap. Use Softness for feathered edges. It is converted to outlines on export.')};
+$('gridSize').onchange=()=>{cell=+$('gridSize').value;drawGuides()};
+selectChar('A');syncMode();renderList();updatePreview();
 })();
 </script>
 </body>
