@@ -9,11 +9,11 @@
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="author" content="Font Editor">
 <meta name="google-site-verification" content="ZtVycQlusjRtvdn0XZOq64ukSrI-ftkZyAIsRpB0E6o">
-<link rel="canonical" href="https://USERNAME.github.io/REPO-NAME/">
-<meta property="og:url" content="https://USERNAME.github.io/REPO-NAME/">
+<link rel="canonical" href="https://font-editor.github.io/Font-Editor/">
+<meta property="og:url" content="https://font-editor.github.io/Font-Editor/">
 <meta property="og:site_name" content="Font Editor">
-<meta property="og:image" content="https://USERNAME.github.io/REPO-NAME/og-image.png">
-<meta name="twitter:image" content="https://USERNAME.github.io/REPO-NAME/og-image.png">
+<meta property="og:image" content="https://font-editor.github.io/Font-Editor/og-image.png">
+<meta name="twitter:image" content="https://font-editor.github.io/Font-Editor/og-image.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Font Editor – Free Online Font Maker (Vector and Pixel)">
 <meta property="og:description" content="Draw vector or pixel letters, design a typeface, and export your custom font as a TTF file.">
@@ -80,7 +80,7 @@
    "name": "Is my work uploaded anywhere?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "No. Drawing happens locally in your browser. Use Save project to keep an editable backup file."
+    "text": "Your project is stored locally in your browser. If you use AI tools, selected glyph data or an uploaded handwriting image is sent to your configured AI service for processing."
    }
   }
  ]
@@ -164,6 +164,22 @@ footer{max-width:1400px;margin:0 auto;padding:26px 22px 44px;color:var(--muted);
 ::-webkit-scrollbar{width:9px;height:9px}
 ::-webkit-scrollbar-thumb{background:#2a3350;border-radius:9px}
 @media(max-width:860px){main{grid-template-columns:1fr;padding:14px}aside.panel{position:static}.hero{padding-top:44px}.topbar{padding:10px 14px}}
+
+/* AI FONT STUDIO */
+.ai-studio{margin-top:24px;padding:18px;border:1px solid rgba(124,140,255,.35);border-radius:18px;background:linear-gradient(145deg,rgba(124,140,255,.12),rgba(199,139,255,.06))}
+.ai-studio h2{margin-bottom:8px}
+.ai-studio .ai-section{padding:14px 0;border-top:1px solid var(--line)}
+.ai-studio .ai-section:first-of-type{border-top:0}
+.ai-studio button{margin:4px 3px 4px 0}
+.ai-studio textarea{min-height:75px}
+.ai-status{min-height:20px;margin-top:10px;color:var(--muted);font-size:13px}
+.ai-result{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);font-size:13px;margin-top:8px}
+.ai-studio input[type=file]{display:none}
+.ai-studio .ai-note{color:var(--muted);font-size:12px;margin:5px 0 10px}
+.ai-studio .ai-inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ai-studio .ai-inline input{flex:1;min-width:180px}
+@media(max-width:600px){.ai-studio{padding:13px}.ai-studio button{max-width:100%}}
+
 </style>
 </head>
 <body>
@@ -312,6 +328,46 @@ footer{max-width:1400px;margin:0 auto;padding:26px 22px 44px;color:var(--muted);
       <button id="scaleDown">Make smaller</button>
     </div>
 
+
+    <section class="ai-studio" aria-label="AI Font Studio">
+      <h2><i>AI</i> AI Font Studio</h2>
+      <p class="small">Generate missing characters, scan a handwriting sheet and request font edits. AI features require your Cloudflare Worker to be deployed and configured.</p>
+      <div class="ai-section">
+        <b>1. Generate missing letters</b>
+        <p class="ai-note">Draw at least five different sample characters first. The AI will use them as style references.</p>
+        <label for="aiTargets">Characters to generate</label>
+        <input id="aiTargets" value="ABCDEFGHIJKLMNOPQRSTUVWXYZ" placeholder="Example: ABCDEFGHIJKLMNOPQRSTUVWXYZ">
+        <button class="primary" id="aiGenerate" type="button">Generate characters</button>
+      </div>
+      <div class="ai-section">
+        <b>2. Convert a handwriting sheet</b>
+        <p class="ai-note">Upload a clear image with separated handwritten characters. Results depend on image quality and layout.</p>
+        <input id="aiSheet" type="file" accept="image/png,image/jpeg,image/webp">
+        <div class="ai-inline"><button id="aiChooseSheet" type="button">Choose handwriting image</button><span id="aiSheetName" class="small">No image selected</span></div>
+        <button class="primary" id="aiScan" type="button">Scan handwriting</button>
+      </div>
+      <div class="ai-section">
+        <b>3. Edit your font with instructions</b>
+        <label for="aiInstruction">What should the AI change?</label>
+        <textarea id="aiInstruction" placeholder="Example: Make the letters slightly rounder and more consistent."></textarea>
+        <button class="primary" id="aiEdit" type="button">Apply AI edit</button>
+      </div>
+      <div class="ai-section">
+        <b>4. Check font consistency</b>
+        <p class="ai-note">Get suggestions about stroke widths, proportions and spacing.</p>
+        <button id="aiCheck" type="button">Check my font</button>
+      </div>
+      <div class="ai-section">
+        <b>5. Bulk font adjustments</b>
+        <p class="ai-note">Adjust vector stroke weights or apply an italic slant to the drawn characters.</p>
+        <button id="bulkThicker" type="button">Increase stroke weight</button>
+        <button id="bulkThinner" type="button">Decrease stroke weight</button>
+        <button id="bulkItalic" type="button">Apply italic slant</button>
+      </div>
+      <div class="ai-status" id="aiStatus" role="status" aria-live="polite">AI tools are ready once the Worker URL is configured.</div>
+      <div class="ai-result" id="aiResult"></div>
+    </section>
+
     <div class="preview">
       <h2><i>5</i>Live preview</h2>
       <label for="previewText">Type something to preview</label>
@@ -350,12 +406,12 @@ jumps over 123.</textarea>
       <details><summary>Can I make a pixel font?</summary><p>Yes. Switch to Pixel mode, pick a grid size and click or drag to fill squares. Vector mode gives smooth freehand lines instead.</p></details>
       <details><summary>How do I install my font?</summary><p>Export the .ttf file. On Windows, right-click it and choose Install. On Mac, double-click it and choose Install Font.</p></details>
       <details><summary>Can I turn my handwriting into a font?</summary><p>Draw each letter with a mouse, finger or stylus in Vector mode, then export. Spacing and size can be adjusted per character.</p></details>
-      <details><summary>Is my work uploaded anywhere?</summary><p>No. Drawing happens locally in your browser. Use Save project to keep an editable backup file.</p></details>
+      <details><summary>Is my work uploaded anywhere?</summary><p>Your drawings and projects are stored locally in your browser, including autosaves. If you use the AI tools, the selected glyph data or uploaded handwriting image is sent to your configured AI Worker for processing. Do not upload private or sensitive material.</p></details>
     </div>
   </div>
 </section>
 
-<footer>Everything happens locally in your browser. TTF export loads the OpenType.js library from a CDN, so you need an internet connection to export. Save your project JSON regularly as an editable backup.</footer>
+<footer>Your project and autosave are stored locally in this browser. If you use an AI feature, the relevant glyph data or handwriting image is sent to your configured AI service. TTF export loads OpenType.js from a CDN. Save a project JSON backup regularly.</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
 <script>
@@ -1783,7 +1839,174 @@ $('gridSize').onchange=()=>{
   drawGuides();
 };
 
-selectChar('A');
+
+// ============================================
+// AI FONT STUDIO, LOCAL AUTOSAVE AND BULK EDITS
+// ============================================
+// Replace this URL with your deployed Cloudflare Worker URL.
+const AI_WORKER_URL = "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev";
+const AUTOSAVE_KEY = "fontEditorAutosave_v1";
+let autosaveTimer = null;
+
+function aiStatus(message){const el=$("aiStatus");if(el)el.textContent=message;}
+function aiResult(message){const el=$("aiResult");if(el)el.textContent=message;}
+
+async function callFontAI(payload){
+  if(!AI_WORKER_URL||AI_WORKER_URL.includes("YOUR-WORKER-NAME"))throw new Error("Set your Cloudflare Worker URL in AI_WORKER_URL first.");
+  const res=await fetch(AI_WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  let data;try{data=await res.json();}catch(_){throw new Error("The AI Worker returned an invalid response.");}
+  if(!res.ok)throw new Error(data.error||"AI request failed.");
+  return data;
+}
+
+function getDrawnSamples(){
+  return chars.filter(c=>has(glyphs[c])).slice(0,5).map(c=>{
+    const g=ensure(c);
+    return {character:c,advance:g.advance||700,strokes:allStrokes(g).slice(0,12).map(st=>({
+      width:Number(st.width)||12,color:typeof st.color==="string"?st.color:"#f2f4ff",
+      points:(st.points||[]).slice(0,30).map(p=>({x:Math.max(0,Math.min(700,Number(p.x)||0)),y:Math.max(0,Math.min(700,Number(p.y)||0))}))
+    })).filter(st=>st.points.length)};
+  }).filter(g=>g.strokes.length);
+}
+
+function cleanAIGlyph(raw){
+  const strokes=Array.isArray(raw.strokes)?raw.strokes:[];
+  return {strokes:strokes.slice(0,8).map(st=>({
+    width:Math.max(2,Math.min(35,Number(st.width)||12)),
+    color:typeof st.color==="string"?st.color:"#f2f4ff",
+    points:(Array.isArray(st.points)?st.points:[]).slice(0,30).map(p=>({
+      x:Math.max(0,Math.min(700,Number(p.x)||0)),y:Math.max(0,Math.min(700,Number(p.y)||0))
+    }))
+  })).filter(st=>st.points.length),cells:[],paths:[],advance:Math.max(250,Math.min(1000,Number(raw.advance)||700))};
+}
+
+function applyAIGlyphs(result){
+  if(!result||!result.glyphs||typeof result.glyphs!=="object")throw new Error("The AI did not return usable glyphs.");
+  let count=0;
+  for(const [character,raw] of Object.entries(result.glyphs)){
+    if(!chars.includes(character)||!raw||typeof raw!=="object")continue;
+    const glyph=cleanAIGlyph(raw);if(!glyph.strokes.length)continue;
+    glyphs[character]=glyph;count++;
+  }
+  if(!count)throw new Error("No usable characters were returned.");
+  renderList();drawGuides();updatePreview();scheduleAutosave();return count;
+}
+
+$("aiGenerate").addEventListener("click",async()=>{
+  try{
+    const samples=getDrawnSamples();
+    const targets=[...new Set($("aiTargets").value.split(""))].filter(c=>chars.includes(c)&&!has(glyphs[c]));
+    if(samples.length<5)throw new Error("Draw at least five different characters before generating.");
+    if(!targets.length)throw new Error("There are no missing requested characters.");
+    aiStatus("Generating characters…");aiResult("");
+    const result=await callFontAI({action:"generate",samples,targets});
+    saveHistory();const count=applyAIGlyphs(result);
+    aiStatus("Generated "+count+" characters.");setStatus("AI generated "+count+" characters.");
+  }catch(err){aiStatus("Error: "+err.message);}
+});
+
+$("aiChooseSheet").addEventListener("click",()=>$("aiSheet").click());
+$("aiSheet").addEventListener("change",e=>{$("aiSheetName").textContent=e.target.files[0]?e.target.files[0].name:"No image selected";});
+
+$("aiScan").addEventListener("click",async()=>{
+  try{
+    const file=$("aiSheet").files[0];if(!file)throw new Error("Choose a handwriting image first.");
+    if(!["image/png","image/jpeg","image/webp"].includes(file.type))throw new Error("Use a PNG, JPG or WebP image.");
+    if(file.size>5*1024*1024)throw new Error("The image must be smaller than 5 MB.");
+    const targets=chars.filter(c=>!has(glyphs[c]));if(!targets.length)throw new Error("There are no missing characters in the current character set.");
+    aiStatus("Reading handwriting image…");aiResult("");
+    const imageData=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error("Could not read the image."));reader.readAsDataURL(file);});
+    const result=await callFontAI({action:"scan",image:imageData,targets});
+    saveHistory();const count=applyAIGlyphs(result);aiStatus("Imported "+count+" characters from the image.");
+  }catch(err){aiStatus("Error: "+err.message);}
+});
+
+$("aiEdit").addEventListener("click",async()=>{
+  try{
+    const instruction=$("aiInstruction").value.trim();if(!instruction)throw new Error("Enter an editing instruction.");
+    const data={};
+    chars.forEach(c=>{if(has(glyphs[c])){const g=ensure(c);data[c]={advance:g.advance||700,strokes:allStrokes(g).slice(0,8).map(st=>({width:Number(st.width)||12,color:st.color||"#f2f4ff",points:(st.points||[]).slice(0,30)}))};}});
+    if(!Object.keys(data).length)throw new Error("Draw some characters first.");
+    aiStatus("Editing your font…");aiResult("");
+    const result=await callFontAI({action:"edit",instruction,glyphs:data});
+    saveHistory();const count=applyAIGlyphs(result);aiStatus("Applied AI edits to "+count+" characters.");
+  }catch(err){aiStatus("Error: "+err.message);}
+});
+
+$("aiCheck").addEventListener("click",async()=>{
+  try{
+    const data={};chars.forEach(c=>{if(has(glyphs[c])){const g=ensure(c);data[c]={advance:g.advance||700,strokes:allStrokes(g).map(st=>({width:st.width,points:st.points}))};}});
+    if(!Object.keys(data).length)throw new Error("Draw some characters first.");
+    aiStatus("Checking your font…");aiResult("");
+    const result=await callFontAI({action:"check",glyphs:data});
+    aiStatus("Font check complete.");aiResult((result.suggestions||[]).map((v,i)=>(i+1)+". "+v).join("\n")||"No suggestions returned.");
+  }catch(err){aiStatus("Error: "+err.message);}
+});
+
+// Local autosave: project data stays in this browser unless an AI action is used.
+function saveAutosave(){
+  try{localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(project()));}
+  catch(err){console.warn("Font Editor autosave failed:",err);}
+}
+function scheduleAutosave(){clearTimeout(autosaveTimer);autosaveTimer=setTimeout(saveAutosave,800);}
+function restoreAutosave(){
+  try{
+    const saved=localStorage.getItem(AUTOSAVE_KEY);if(!saved)return false;
+    const p=JSON.parse(saved);if(!p||!p.glyphs||!Array.isArray(p.chars))return false;
+    if(!confirm("A locally autosaved font project was found. Restore it?"))return false;
+    chars=p.chars;glyphs=p.glyphs;mode=p.mode||"vector";cell=p.cell||30;kern=p.kern||{};
+    $("fontName").value=p.fontName||"MyCustomFont";
+    for(const c of chars)ensure(c);
+    renderKern();syncMode();renderList();selectChar(chars[0]||"A");updatePreview();
+    return true;
+  }catch(err){console.warn("Could not restore autosave:",err);return false;}
+}
+
+// Autosave after drawing, control changes and project operations.
+canvas.addEventListener("pointerup",scheduleAutosave);
+canvas.addEventListener("pointercancel",scheduleAutosave);
+["fontName","previewText","advance","kernPair","kernVal","gridSize","brushColor","lineWidth","soft","guides","mirror","smooth","charSet","customChars"].forEach(id=>{
+  const el=$(id);if(el){el.addEventListener("input",scheduleAutosave);el.addEventListener("change",scheduleAutosave);}
+});
+$("saveProject").addEventListener("click",scheduleAutosave);
+$("loadProject").addEventListener("click",()=>setTimeout(scheduleAutosave,100));
+window.addEventListener("pagehide",saveAutosave);
+
+// Bulk vector stroke-weight adjustment.
+function changeAllStrokeWidths(multiplier){
+  saveHistory();
+  chars.forEach(c=>{const g=ensure(c);g.strokes.forEach(st=>{st.width=Math.max(2,Math.min(35,(Number(st.width)||12)*multiplier));});g.paths.forEach(path=>{path.width=Math.max(2,Math.min(35,(Number(path.width)||12)*multiplier));});});
+  drawGuides();updatePreview();renderList();scheduleAutosave();
+}
+
+function slantAllGlyphs(amount){
+  saveHistory();
+  const movePoint=p=>({...p,x:Math.max(0,Math.min(700,Number(p.x)+(350-Number(p.y))*amount))});
+  chars.forEach(c=>{
+    const g=ensure(c);
+    g.strokes.forEach(st=>{st.points=(st.points||[]).map(movePoint);});
+    g.paths.forEach(path=>{
+      (path.nodes||[]).forEach(node=>{
+        const oldY=Number(node.y)||0,dx=(350-oldY)*amount;
+        node.x=Math.max(0,Math.min(700,(Number(node.x)||0)+dx));
+        for(const key of ["a","b"]){if(node[key]&&typeof node[key]==="object"){node[key].x=Math.max(0,Math.min(700,(Number(node[key].x)||0)+dx));}}
+      });
+    });
+    g.cells.forEach(cell=>{cell.x=Math.max(0,Math.min(700,cell.x+(350-(cell.y+cell.s/2))*amount));});
+  });
+  drawGuides();updatePreview();renderList();scheduleAutosave();
+}
+
+$("bulkThicker").addEventListener("click",()=>{changeAllStrokeWidths(1.12);setStatus("Increased vector stroke weight.");});
+$("bulkThinner").addEventListener("click",()=>{changeAllStrokeWidths(.88);setStatus("Decreased vector stroke weight.");});
+$("bulkItalic").addEventListener("click",()=>{slantAllGlyphs(.18);setStatus("Applied italic slant.");});
+
+
+// Offer to restore a previous local autosave before opening a fresh project.
+restoreAutosave();
+
+if(!selected||!chars.includes(selected))selected=chars[0]||'A';
+selectChar(selected);
 syncMode();
 renderKern();
 renderList();
