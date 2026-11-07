@@ -139,6 +139,7 @@ canvas#drawCanvas{display:block;width:100%;max-width:640px;margin:auto;height:au
 .info h2{font:700 21px "Space Grotesk",Inter,sans-serif;text-transform:none;letter-spacing:-.3px;color:var(--text);display:block;margin-bottom:12px}.info p,.info li{color:var(--muted)}.info ol{padding-left:22px;margin:0}.info li{margin-bottom:8px}.info li::marker{color:var(--accent2);font-weight:700}
 details{border-bottom:1px solid var(--line);padding:11px 0}summary{cursor:pointer;color:var(--text);font-weight:600}details p{margin:8px 0 2px}
 footer{max-width:1400px;margin:0 auto;padding:26px 22px 44px;color:var(--muted);font-size:13px;text-align:center;border-top:1px solid var(--line)}
+.kerns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.kerns button{padding:5px 11px;font-size:12.5px;border-radius:99px}
 ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#2a3350;border-radius:9px}
 @media(max-width:860px){main{grid-template-columns:1fr;padding:14px}aside.panel{position:static}.hero{padding-top:44px}.topbar{padding:10px 14px}}
 </style>
@@ -149,15 +150,18 @@ footer{max-width:1400px;margin:0 auto;padding:26px 22px 44px;color:var(--muted);
 <section class="hero"><span class="badge">Free · No sign-up · Exports TTF</span>
   <h1>Font Editor: <span class="grad">make your own font online</span></h1>
   <p>A free online font maker. Draw letters with vector, pixel or raster tools, preview your typeface live, and export it as a TTF file.</p>
-  <div class="chips"><span>✒ Vector</span><span>▦ Pixel</span><span>🖌 Raster</span><span>⇩ TTF export</span></div>
+  <div class="chips"><span>✒ Vector</span><span>▦ Pixel</span><span>🖌 Raster</span><span>⌁ Bezier handles</span><span>↔ Kerning</span><span>⇩ TTF export</span></div>
   <a class="cta" href="#editor">Start drawing ↓</a></section>
 <main id="editor">
   <aside class="panel">
     <h2><i>1</i>Typeface</h2>
     <label for="fontName">Font name</label><input id="fontName" value="MyCustomFont" maxlength="40">
     <label for="charSet">Character set</label>
-    <select id="charSet"><option value="basic">Basic Latin (A–Z, a–z, 0–9, punctuation)</option><option value="uppercase">Uppercase A–Z</option><option value="lowercase">Lowercase a–z</option><option value="numbers">Numbers 0–9</option></select>
+    <select id="charSet"><option value="basic">Basic Latin (A–Z, a–z, 0–9, punctuation)</option><option value="uppercase">Uppercase A–Z</option><option value="lowercase">Lowercase a–z</option><option value="numbers">Numbers 0–9</option><option value="latinext">Extended Latin (accents, ć č š ž đ)</option></select>
     <div class="actions"><button id="addChars">Load character set</button></div>
+    <label for="customChars">Custom characters</label><input id="customChars" placeholder="Type or paste, e.g. ćčšžđ" autocomplete="off">
+    <div class="actions"><button id="addCustom">Add characters</button><button id="uploadSet">Upload set (.txt)</button><input id="setFile" type="file" accept=".txt,text/plain" hidden></div>
+    <div class="small" style="margin-top:8px">A .txt file with the characters you want. It replaces the current list; drawings are kept.</div>
     <div class="sep"></div>
     <h2><i>2</i>Characters</h2>
     <div class="small">Pick a character, then draw it in the editor.</div>
@@ -169,6 +173,12 @@ footer{max-width:1400px;margin:0 auto;padding:26px 22px 44px;color:var(--muted);
     <label for="advance">Character width: <span id="advanceValue">700</span></label>
     <input id="advance" type="range" min="350" max="1000" value="700">
     <div class="small" style="margin-top:10px">The dashed side lines in the editor show the character width. Drawings stay centred inside it.</div>
+    <div class="sep"></div>
+    <h2><i>4</i>Kerning</h2>
+    <div class="small">Tighten or loosen the gap between two letters, such as AV or To.</div>
+    <label for="kernPair">Letter pair</label><input id="kernPair" maxlength="4" placeholder="AV" autocomplete="off">
+    <label for="kernVal">Adjustment: <span id="kernValue">0</span></label><input id="kernVal" type="range" min="-300" max="300" step="5" value="0">
+    <div class="kerns" id="kernList"></div><div class="small" style="margin-top:6px">Click a pair to edit it, double-click to remove it.</div>
   </aside>
   <section class="panel">
     <div class="editor-top"><div><h2 style="margin:0 0 4px">Drawing editor</h2><div id="currentChar">A</div></div><div class="small">Draw with mouse, touch, or stylus</div></div>
@@ -180,6 +190,8 @@ footer{max-width:1400px;margin:0 auto;padding:26px 22px 44px;color:var(--muted);
       <button class="tool" data-tool="line">／ Line</button>
       <button class="tool" data-tool="rect">□ Rectangle</button>
       <button class="tool" data-tool="ellipse">◯ Ellipse</button>
+      <button class="tool" data-tool="bezier">⌁ Bezier</button>
+      <button class="tool" data-tool="node">◆ Edit nodes</button>
       <button id="undoBtn">↶ Undo</button>
       <button id="clearBtn" class="danger">Clear</button>
     </div>
@@ -194,7 +206,7 @@ footer{max-width:1400px;margin:0 auto;padding:26px 22px 44px;color:var(--muted);
       <button id="flipH">Flip horizontal</button><button id="flipV">Flip vertical</button><button id="centerGlyph">Center drawing</button><button id="scaleUp">Make larger</button><button id="scaleDown">Make smaller</button>
     </div>
     <div class="preview">
-      <h2><i>4</i>Live preview</h2>
+      <h2><i>5</i>Live preview</h2>
       <label for="previewText">Type something to preview</label>
       <textarea id="previewText">The quick brown fox
 jumps over 123.</textarea>
@@ -206,7 +218,7 @@ jumps over 123.</textarea>
 </main>
 <section class="info" aria-label="About Font Editor"><div class="panel">
 <div><h2>Make your own font online for free</h2><ol><li><b>Pick a character set</b> and give your font a name.</li><li><b>Choose Vector or Pixel mode</b> and draw each character in the editor.</li><li><b>Adjust spacing</b> with the character width slider and check the live preview.</li><li><b>Export a TTF file</b> and install it on your computer.</li></ol></div>
-<div><h2>Vector, pixel or raster font?</h2><p>Vector mode gives smooth, hand-drawn letters, great for handwriting and script styles. Pixel mode snaps everything to a grid for retro, blocky fonts. Raster mode paints onto a bitmap like a paint program, so you can erase part of a stroke, and it is converted to outlines when you export.</p><h2 style="margin-top:18px">Install your font</h2><p>On Windows, right-click the .ttf file and choose Install. On Mac, double-click it and choose Install Font. It then shows up in Word, Photoshop, Canva desktop and other apps.</p></div>
+<div><h2>Vector, pixel or raster font?</h2><p>Vector mode gives smooth, hand-drawn letters, great for handwriting and script styles. Pixel mode snaps everything to a grid for retro, blocky fonts. Raster mode paints onto a bitmap like a paint program, so you can erase part of a stroke, and it is converted to outlines when you export.</p><h2 style="margin-top:18px">Install your font</h2><p>On Windows, right-click the .ttf file and choose Install. On Mac, double-click it and choose Install Font. It then shows up in Word, Photoshop, Canva desktop and other apps.</p><h2 style="margin-top:18px">Curves, kerning and custom characters</h2><p>Draw precise outlines with Bezier handles, adjust the space between letter pairs with kerning, and upload your own character set as a text file to add accents or any alphabet.</p></div>
 <div><h2>FAQ</h2><details><summary>Is Font Editor free?</summary><p>Yes. Font Editor is free to use, runs in your browser and needs no account or sign-up.</p></details><details><summary>Can I make a pixel font?</summary><p>Yes. Switch to Pixel mode, pick a grid size and click or drag to fill squares. Vector mode gives smooth freehand lines instead.</p></details><details><summary>How do I install my font?</summary><p>Export the .ttf file. On Windows, right-click it and choose Install. On Mac, double-click it and choose Install Font.</p></details><details><summary>Can I turn my handwriting into a font?</summary><p>Draw each letter with a mouse, finger or stylus in Vector mode, then export. Spacing and size can be adjusted per character.</p></details><details><summary>Is my work uploaded anywhere?</summary><p>No. Drawing happens locally in your browser. Use Save project to keep an editable backup file.</p></details></div></div></section>
 <footer>Everything happens locally in your browser. TTF export loads the OpenType.js library from a CDN, so you need an internet connection to export. Save your project JSON regularly as an editable backup.</footer>
 <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
@@ -226,10 +238,12 @@ function bbox(b){let x0=N,x1=-1,y0=N,y1=-1;for(let k=0;k<b.length;k++)if(b[k]>12
 function runs(b){const o=[];let act=new Map();for(let j=0;j<=N;j++){const cur=new Map();if(j<N){for(let i=0;i<N;){if(b[j*N+i]>127){const st=i;while(i<N&&b[j*N+i]>127)i++;const k=st+','+(i-st),r=act.get(k)||[st,j,i-st,0];r[3]++;cur.set(k,r)}else i++}}for(const[k,r]of act)if(!cur.has(k))o.push(r);act=cur}return o}
 function toCanvas(b){const im=rctx.createImageData(N,N),u=new Uint32Array(im.data.buffer);for(let i=0;i<b.length;i++)if(b[i])u[i]=((b[i]<<24)|0xFFF4F2)>>>0;rctx.putImageData(im,0,0);return rc}
 function stamp(b,x,y,r,f,erase){const R=r+f;for(let j=Math.max(0,Math.floor(y-R));j<=Math.min(N-1,Math.ceil(y+R));j++)for(let i=Math.max(0,Math.floor(x-R));i<=Math.min(N-1,Math.ceil(x+R));i++){const a=Math.max(0,Math.min(1,(r-Math.hypot(i+.5-x,j+.5-y))/f+.5));if(!a)continue;const k=j*N+i;b[k]=erase?Math.round(b[k]*(1-a)):Math.max(b[k],Math.round(a*255))}}
-let mode='vector',cell=30;
-const blank=()=>({strokes:[],cells:[]});
-const has=g=>!!(g&&((g.strokes&&g.strokes.length)||(g.cells&&g.cells.length)||(g.bits&&g.bits.some(v=>v))));
-function ensure(c){if(!glyphs[c])glyphs[c]=blank();const g=glyphs[c];if(!g.strokes)g.strokes=[];if(!g.cells)g.cells=[];if(g.bits&&!(g.bits instanceof Bits))revive(g);return g}
+let mode='vector',cell=30,kern={},bez=null,drag=null;
+function nodeStroke(pa){const pts=[],n=pa.nodes,sg=pa.closed?n.length:n.length-1;for(let i=0;i<sg;i++){const p=n[i],q=n[(i+1)%n.length];for(let t=0;t<=24;t++){const u=t/24,v=1-u;pts.push({x:v*v*v*p.x+3*v*v*u*p.b.x+3*v*u*u*q.a.x+u*u*u*q.x,y:v*v*v*p.y+3*v*v*u*p.b.y+3*v*u*u*q.a.y+u*u*u*q.y})}}if(n.length===1)pts.push({x:n[0].x,y:n[0].y});return{points:pts,color:pa.color,width:pa.width}}
+const allStrokes=g=>g.strokes.concat(g.paths.map(nodeStroke));
+const blank=()=>({strokes:[],cells:[],paths:[]});
+const has=g=>!!(g&&((g.strokes&&g.strokes.length)||(g.paths&&g.paths.length)||(g.cells&&g.cells.length)||(g.bits&&g.bits.some(v=>v))));
+function ensure(c){if(!glyphs[c])glyphs[c]=blank();const g=glyphs[c];if(!g.strokes)g.strokes=[];if(!g.cells)g.cells=[];if(!g.paths)g.paths=[];if(g.bits&&!(g.bits instanceof Bits))revive(g);return g}
 function setStatus(s){status.textContent=s}
 function drawGuides(){
  ctx.clearRect(0,0,700,700);ctx.fillStyle='#141a28';ctx.fillRect(0,0,700,700);
@@ -242,8 +256,9 @@ function drawGuides(){
  ctx.fillStyle='#f2f4ff';for(const k of g.cells)ctx.fillRect(k.x,k.y,k.s,k.s);
  if(g.bits)ctx.drawImage(toCanvas(g.bits),0,0)
  ctx.lineCap='round';ctx.lineJoin='round';
- for(const stroke of g.strokes){if(!stroke.points?.length)continue;ctx.strokeStyle=stroke.color;ctx.lineWidth=stroke.width;ctx.beginPath();ctx.moveTo(stroke.points[0].x,stroke.points[0].y);for(let i=1;i<stroke.points.length;i++)ctx.lineTo(stroke.points[i].x,stroke.points[i].y);if(stroke.points.length===1){ctx.lineTo(stroke.points[0].x+.1,stroke.points[0].y+.1)}ctx.stroke();}
+ for(const stroke of allStrokes(g)){if(!stroke.points?.length)continue;ctx.strokeStyle=stroke.color;ctx.lineWidth=stroke.width;ctx.beginPath();ctx.moveTo(stroke.points[0].x,stroke.points[0].y);for(let i=1;i<stroke.points.length;i++)ctx.lineTo(stroke.points[i].x,stroke.points[i].y);if(stroke.points.length===1){ctx.lineTo(stroke.points[0].x+.1,stroke.points[0].y+.1)}ctx.stroke();}
  if(shapePreview){ctx.save();ctx.strokeStyle=shapePreview.color;ctx.lineWidth=shapePreview.width;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(shapePreview.points[0].x,shapePreview.points[0].y);shapePreview.points.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke();ctx.restore();}
+ if(activeTool==='bezier'||activeTool==='node')drawNodes(g);
 }
 function renderList(){
  list.innerHTML='';
@@ -251,7 +266,7 @@ function renderList(){
  const count=chars.filter(c=>has(glyphs[c])).length;
  $('progress').textContent=`${count} of ${chars.length} characters drawn`;$('bar').style.width=(chars.length?count/chars.length*100:0)+'%';
 }
-function selectChar(c){selected=c;history=[];$('currentChar').textContent=c===' '?'Space':c;$('advance').value=ensure(c).advance||700;$('advanceValue').textContent=$('advance').value;drawGuides();renderList();updatePreview()}
+function selectChar(c){selected=c;history=[];bez=null;$('currentChar').textContent=c===' '?'Space':c;$('advance').value=ensure(c).advance||700;$('advanceValue').textContent=$('advance').value;drawGuides();renderList();updatePreview()}
 function saveHistory(){history.push(JSON.stringify(ensure(selected)));if(history.length>40)history.shift()}
 function point(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*700/r.width,y:(e.clientY-r.top)*700/r.height}}
 const mir=p=>({x:700-p.x,y:p.y});
@@ -273,6 +288,7 @@ function eraseVec(a,b){
  const n=Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/(rad/2))||1,cs=[];
  for(let t=0;t<=n;t++){const x=a.x+(b.x-a.x)*t/n,y=a.y+(b.y-a.y)*t/n;cs.push({x,y});if(m)cs.push({x:700-x,y})}
  const out=[];
+ g.paths=g.paths.filter(pa=>{const st=nodeStroke(pa),lm=rad+pa.width/2;if(st.points.some(p=>cs.some(c=>Math.hypot(p.x-c.x,p.y-c.y)<lm))){g.strokes.push(st);return false}return true});
  for(const s of g.strokes){
   const lim=rad+s.width/2,step=Math.max(2,lim/3),dense=[];
   s.points.forEach((p,i)=>{if(i){const q=s.points[i-1],k=Math.ceil(Math.hypot(p.x-q.x,p.y-q.y)/step);for(let j=1;j<k;j++)dense.push({x:q.x+(p.x-q.x)*j/k,y:q.y+(p.y-q.y)*j/k})}dense.push(p)});
@@ -285,6 +301,7 @@ function eraseVec(a,b){
 }
 canvas.addEventListener('pointerdown',e=>{
  e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=point(e);
+ if(mode==='vector'&&(activeTool==='bezier'||activeTool==='node')){bezDown(p,e);return}
  if(mode!=='vector'){saveHistory();drawing=true;shapeStart=p;if(activeTool==='pen'||activeTool==='eraser')paintPath([p,p],activeTool==='eraser');else shapePreview={points:[p,p],color:'#8b9cff',width:2};drawGuides();return}
  if(activeTool==='eraser'){saveHistory();drawing=true;lastE=p;eraseVec(p,p);return}
  saveHistory();drawing=true;shapeStart=p;
@@ -294,6 +311,7 @@ canvas.addEventListener('pointerdown',e=>{
  drawGuides();
 });
 canvas.addEventListener('pointermove',e=>{
+ if(drag){bezMove(point(e),e);return}
  if(!drawing)return;const p=point(e);
  if(mode==='vector'&&activeTool==='eraser'){eraseVec(lastE,p);lastE=p;return}
  if(mode!=='vector'){if(activeTool==='pen'||activeTool==='eraser'){paintPath([shapeStart,p],activeTool==='eraser');shapeStart=p}else{shapePreview={points:shapePoints(shapeStart,p,activeTool),color:'#8b9cff',width:2};drawGuides()}return}
@@ -302,6 +320,7 @@ canvas.addEventListener('pointermove',e=>{
  drawGuides();
 });
 function stop(e){
+ if(drag){drag=null;refresh();return}
  if(drawing&&mode!=='vector'){if(activeTool!=='pen'&&activeTool!=='eraser'&&shapeStart)paintPath(shapePoints(shapeStart,e?point(e):shapeStart,activeTool),false);drawing=false;currentStroke=null;shapeStart=null;shapePreview=null;drawGuides();renderList();updatePreview();return}
  if(drawing&&activeTool==='pen'&&$('smooth').checked){currentStroke.points=smoothPts(currentStroke.points);if(mirrorStroke)mirrorStroke.points=smoothPts(mirrorStroke.points)}
  if(drawing&&activeTool!=='pen'&&shapeStart){const p=e?point(e):shapeStart,pts=shapePoints(shapeStart,p,activeTool),g=ensure(selected);g.strokes.push({points:pts,color:currentStroke.color,width:currentStroke.width});if($('mirror').checked)g.strokes.push({points:pts.map(mir),color:currentStroke.color,width:currentStroke.width})}
@@ -309,47 +328,47 @@ function stop(e){
  drawing=false;currentStroke=null;shapeStart=null;shapePreview=null;drawGuides();renderList();updatePreview()
 }
 canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop);canvas.addEventListener('lostpointercapture',()=>{if(drawing)stop()});
-document.querySelectorAll('.tool').forEach(btn=>btn.onclick=()=>{activeTool=btn.dataset.tool;document.querySelectorAll('.tool').forEach(b=>b.classList.toggle('active',b===btn));setStatus('Selected '+activeTool+' tool.')});
+document.querySelectorAll('.tool').forEach(btn=>btn.onclick=()=>{activeTool=btn.dataset.tool;document.querySelectorAll('.tool').forEach(b=>b.classList.toggle('active',b===btn));if((activeTool==='bezier'||activeTool==='node')&&mode!=='vector'){mode='vector';syncMode()}if(activeTool!=='bezier'&&bez)finishPath();setStatus(hints[activeTool]||'Selected '+activeTool+' tool.');drawGuides()});
 $('undoBtn').onclick=()=>{if(!history.length)return;glyphs[selected]=JSON.parse(history.pop());drawGuides();renderList();updatePreview()};
 $('clearBtn').onclick=()=>{saveHistory();glyphs[selected]=blank();drawGuides();renderList();updatePreview();setStatus('Character cleared.')};
 $('guides').onchange=drawGuides;
 $('lineWidth').oninput=()=> $('lineWidthValue').textContent=$('lineWidth').value;
-function transformGlyph(fn,cf,bf){saveHistory();const g=ensure(selected);g.strokes.forEach(s=>s.points=s.points.map(fn));if(cf)g.cells=g.cells.map(cf);if(bf&&g.bits)g.bits=bf(g.bits);drawGuides();renderList();updatePreview()}
+function transformGlyph(fn,cf,bf){saveHistory();const g=ensure(selected);g.strokes.forEach(s=>s.points=s.points.map(fn));g.paths.forEach(pa=>pa.nodes.forEach(n=>{const q=fn({x:n.x,y:n.y}),a=fn(n.a),b=fn(n.b);n.x=q.x;n.y=q.y;n.a=a;n.b=b}));if(cf)g.cells=g.cells.map(cf);if(bf&&g.bits)g.bits=bf(g.bits);drawGuides();renderList();updatePreview()}
 $('flipH').onclick=()=>transformGlyph(p=>({x:700-p.x,y:p.y}),k=>({...k,x:700-k.x-k.s}),r=>warp(r,(i,j)=>[N-1-i,j]));
 $('flipV').onclick=()=>{const c=ensure(selected).cells,t=Math.min(...c.map(k=>k.y)),b=Math.max(...c.map(k=>k.y+k.s));const gb=ensure(selected).bits,bb=gb?bbox(gb):{y0:0,y1:N-1};transformGlyph(p=>({x:p.x,y:700-p.y}),k=>({...k,y:t+b-k.y-k.s}),r=>warp(r,(i,j)=>[i,bb.y0+bb.y1-j]))};
-$('centerGlyph').onclick=()=>{const g0=ensure(selected),pts=g0.strokes.flatMap(s=>s.points).concat(g0.cells.flatMap(k=>[{x:k.x,y:k.y},{x:k.x+k.s,y:k.y+k.s}])).concat(g0.bits&&g0.bits.some(v=>v)?(bb=>[{x:bb.x0,y:bb.y0},{x:bb.x1+1,y:bb.y1+1}])(bbox(g0.bits)):[]);if(!pts.length)return;const minX=Math.min(...pts.map(p=>p.x)),maxX=Math.max(...pts.map(p=>p.x)),minY=Math.min(...pts.map(p=>p.y)),maxY=Math.max(...pts.map(p=>p.y));const dx=350-(minX+maxX)/2,dy=430-(minY+maxY)/2;transformGlyph(p=>({x:p.x+dx,y:p.y+dy}),k=>({...k,x:k.x+Math.round(dx/k.s)*k.s,y:k.y+Math.round(dy/k.s)*k.s}),r=>warp(r,(i,j)=>[i-Math.round(dx),j-Math.round(dy)]))};
-function scaleGlyph(f){const pts=ensure(selected).strokes.flatMap(s=>s.points);if(!pts.length){const gb=ensure(selected).bits;if(gb&&gb.some(v=>v)){const bb=bbox(gb),cx=(bb.x0+bb.x1)/2,cy=(bb.y0+bb.y1)/2;transformGlyph(p=>p,null,r=>warp(r,(i,j)=>[Math.round(cx+(i-cx)/f),Math.round(cy+(j-cy)/f)]));return}if(ensure(selected).cells.length)setStatus('Pixel drawings cannot be scaled. Try a different pixel size instead.');return}const cx=pts.reduce((n,p)=>n+p.x,0)/pts.length,cy=pts.reduce((n,p)=>n+p.y,0)/pts.length;transformGlyph(p=>({x:cx+(p.x-cx)*f,y:cy+(p.y-cy)*f}))}
+$('centerGlyph').onclick=()=>{const g0=ensure(selected),pts=allStrokes(g0).flatMap(s=>s.points).concat(g0.cells.flatMap(k=>[{x:k.x,y:k.y},{x:k.x+k.s,y:k.y+k.s}])).concat(g0.bits&&g0.bits.some(v=>v)?(bb=>[{x:bb.x0,y:bb.y0},{x:bb.x1+1,y:bb.y1+1}])(bbox(g0.bits)):[]);if(!pts.length)return;const minX=Math.min(...pts.map(p=>p.x)),maxX=Math.max(...pts.map(p=>p.x)),minY=Math.min(...pts.map(p=>p.y)),maxY=Math.max(...pts.map(p=>p.y));const dx=350-(minX+maxX)/2,dy=430-(minY+maxY)/2;transformGlyph(p=>({x:p.x+dx,y:p.y+dy}),k=>({...k,x:k.x+Math.round(dx/k.s)*k.s,y:k.y+Math.round(dy/k.s)*k.s}),r=>warp(r,(i,j)=>[i-Math.round(dx),j-Math.round(dy)]))};
+function scaleGlyph(f){const pts=allStrokes(ensure(selected)).flatMap(s=>s.points);if(!pts.length){const gb=ensure(selected).bits;if(gb&&gb.some(v=>v)){const bb=bbox(gb),cx=(bb.x0+bb.x1)/2,cy=(bb.y0+bb.y1)/2;transformGlyph(p=>p,null,r=>warp(r,(i,j)=>[Math.round(cx+(i-cx)/f),Math.round(cy+(j-cy)/f)]));return}if(ensure(selected).cells.length)setStatus('Pixel drawings cannot be scaled. Try a different pixel size instead.');return}const cx=pts.reduce((n,p)=>n+p.x,0)/pts.length,cy=pts.reduce((n,p)=>n+p.y,0)/pts.length;transformGlyph(p=>({x:cx+(p.x-cx)*f,y:cy+(p.y-cy)*f}))}
 $('scaleUp').onclick=()=>scaleGlyph(1.12);$('scaleDown').onclick=()=>scaleGlyph(.88);
 $('advance').oninput=()=>{$('advanceValue').textContent=$('advance').value;ensure(selected).advance=+$('advance').value;drawGuides();updatePreview()};
 $('prevChar').onclick=()=>selectChar(chars[Math.max(0,chars.indexOf(selected)-1)]);
 $('nextChar').onclick=()=>selectChar(chars[Math.min(chars.length-1,chars.indexOf(selected)+1)]);
-$('addChars').onclick=()=>{const sets={basic,uppercase:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",lowercase:"abcdefghijklmnopqrstuvwxyz",numbers:"0123456789"};chars=[...new Set(sets[$('charSet').value].split(''))];chars.forEach(ensure);selectChar(chars[0]);setStatus('Character set loaded.')};
+$('addChars').onclick=()=>{const sets={basic,uppercase:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",lowercase:"abcdefghijklmnopqrstuvwxyz",numbers:"0123456789",latinext:basic+"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿĆČŠŽĐćčšžđ"};chars=[...new Set(sets[$('charSet').value].split(''))];chars.forEach(ensure);selectChar(chars[0]);setStatus('Character set loaded.')};
 $('previewText').oninput=updatePreview;
 function updatePreview(){
  const out=$('previewOutput');out.innerHTML='';const K=2;
- for(const ch of $('previewText').value){if(ch==='\n'){out.appendChild(document.createElement('br'));continue}
+ let prev='';for(const ch of $('previewText').value){const kv=(kern[prev+ch]||0)*.00145;prev=ch;if(ch==='\n'){out.appendChild(document.createElement('br'));continue}
   const g=glyphs[ch];
   if(has(g)){const adv=g.advance||700,c=document.createElement('canvas');c.width=adv*.12*K;c.height=120*K;c.style.height='1.45em';c.style.width='auto';c.style.verticalAlign='middle';
    const x=c.getContext('2d');x.scale(K,K);x.strokeStyle='#eef2fc';x.fillStyle='#eef2fc';x.lineCap='round';x.lineJoin='round';
    const px=p=>(p.x-350)*.12/.7+adv*.06,py=p=>p.y*120/700;
-   for(const s of g.strokes){x.lineWidth=Math.max(1,s.width*.12/.7);x.beginPath();s.points.forEach((p,i)=>i?x.lineTo(px(p),py(p)):x.moveTo(px(p),py(p)));if(s.points.length===1)x.lineTo(px(s.points[0])+.1,py(s.points[0]));x.stroke()}
+   for(const s of allStrokes(g)){x.lineWidth=Math.max(1,s.width*.12/.7);x.beginPath();s.points.forEach((p,i)=>i?x.lineTo(px(p),py(p)):x.moveTo(px(p),py(p)));if(s.points.length===1)x.lineTo(px(s.points[0])+.1,py(s.points[0]));x.stroke()}
    for(const k of g.cells)x.fillRect(px({x:k.x}),py({y:k.y}),k.s*.12/.7,k.s*120/700);
    if(g.bits){x.imageSmoothingQuality='high';x.drawImage(toCanvas(g.bits),px({x:0}),0,120,120)}
-   out.appendChild(c)
-  }else{const span=document.createElement('span');span.textContent=ch===' '?'\u00a0\u00a0':ch;span.style.opacity='.35';out.appendChild(span)}
+   c.style.marginLeft=kv+'em';out.appendChild(c)
+  }else{const span=document.createElement('span');span.textContent=ch===' '?'\u00a0\u00a0':ch;span.style.opacity='.35';span.style.marginLeft=kv+'em';out.appendChild(span)}
  }
 }
-function project(){return {version:2,fontName:$('fontName').value,chars,glyphs,mode,cell}}
+function project(){return {version:2,fontName:$('fontName').value,chars,glyphs,mode,cell,kern}}
 $('saveProject').onclick=()=>{const blob=new Blob([JSON.stringify(project())],{type:'application/json'});download(blob,($('fontName').value||'font')+'.fontproject.json');setStatus('Project saved.')};
 $('loadProject').onclick=()=>$('projectFile').click();
-$('projectFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JSON.parse(await f.text());chars=p.chars;glyphs=p.glyphs;for(const c in glyphs)ensure(c);mode=p.mode||'vector';cell=p.cell||30;syncMode();$('fontName').value=p.fontName||'MyCustomFont';selectChar(chars[0]||'A');setStatus('Project loaded.')}catch(err){setStatus('Could not load that project file.')}e.target.value=''};
+$('projectFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JSON.parse(await f.text());chars=p.chars;glyphs=p.glyphs;for(const c in glyphs)ensure(c);mode=p.mode||'vector';cell=p.cell||30;kern=p.kern||{};renderKern();syncMode();$('fontName').value=p.fontName||'MyCustomFont';selectChar(chars[0]||'A');setStatus('Project loaded.')}catch(err){setStatus('Could not load that project file.')}e.target.value=''};
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function glyphPath(g){
  const path=new opentype.Path(),adv=g.advance||700;
  const cv=p=>({x:(p.x-350)/.7+adv/2,y:(510-p.y)/.7});
  const poly=pts=>{pts.forEach((p,i)=>i?path.lineTo(p.x,p.y):path.moveTo(p.x,p.y));path.close()};
  const dot=(c,r)=>poly(Array.from({length:16},(_,i)=>{const t=i/16*Math.PI*2;return{x:c.x+Math.cos(t)*r,y:c.y+Math.sin(t)*r}}));
- for(const s of g.strokes||[]){
+ for(const s of allStrokes(g)){
   const r=Math.max(2,s.width/.7/2),raw=(s.points||[]).map(cv);if(!raw.length)continue;
   const pts=[raw[0]];for(let i=1;i<raw.length;i++){const l=pts[pts.length-1];if(Math.hypot(raw[i].x-l.x,raw[i].y-l.y)>=Math.max(4,r*.35))pts.push(raw[i])}
   const e=raw[raw.length-1],l=pts[pts.length-1];if(l!==e&&(e.x!==l.x||e.y!==l.y))pts.push(e);
@@ -367,18 +386,65 @@ $('exportBtn').onclick=()=>{
   const notdef=new opentype.Glyph({name:'.notdef',unicode:0,advanceWidth:700,path:new opentype.Path()});
   const space=new opentype.Glyph({name:'space',unicode:32,advanceWidth:350,path:new opentype.Path()});
   const out=[notdef,space];
-  const seen=new Set([0,32]);
-  for(const ch of chars){const cp=ch.codePointAt(0);if(seen.has(cp))continue;seen.add(cp);const g=ensure(ch);out.push(new opentype.Glyph({name:'uni'+cp.toString(16).toUpperCase(),unicode:cp,advanceWidth:g.advance||700,path:glyphPath(g)}))}
-  const font=new opentype.Font({familyName:$('fontName').value.trim()||'My Custom Font',styleName:'Regular',unitsPerEm:1000,ascender:800,descender:-200,glyphs:out});
-  download(new Blob([font.toArrayBuffer()],{type:'font/ttf'}),name+'.ttf');setStatus('Font exported! Install the TTF file to use it in other apps.');
+  const seen=new Set([0,32]),idx={32:1};
+  for(const ch of chars){const cp=ch.codePointAt(0);if(seen.has(cp))continue;seen.add(cp);const g=ensure(ch);idx[cp]=out.length;out.push(new opentype.Glyph({name:'uni'+cp.toString(16).toUpperCase(),unicode:cp,advanceWidth:g.advance||700,path:glyphPath(g)}))}
+  const pairs=Object.entries(kern).map(([k,v])=>{const[l,r]=[...k];return[idx[l.codePointAt(0)],idx[r.codePointAt(0)],v]}).filter(x=>x[0]!=null&&x[1]!=null&&x[2]);const font=new opentype.Font({familyName:$('fontName').value.trim()||'My Custom Font',styleName:'Regular',unitsPerEm:1000,ascender:800,descender:-200,glyphs:out});
+  download(new Blob([addKern(font.toArrayBuffer(),pairs)],{type:'font/ttf'}),name+'.ttf');setStatus('Font exported! Install the TTF file to use it in other apps.');
  }catch(err){console.error(err);setStatus('Export failed: '+err.message)}
 };
+const hints={bezier:'Bezier: click to add points, click and drag to pull curve handles. Click the first point to close the shape. Double-click or press Enter to finish.',node:'Edit nodes: drag points and handles. Double-click a point to switch sharp/smooth. Alt-click a point to delete it. Shift keeps handles independent.'};
+const refresh=()=>{drawGuides();renderList();updatePreview()};
+const near=(p,q,r=9)=>Math.hypot(p.x-q.x,p.y-q.y)<r;
+function findNode(g,p){for(const pa of g.paths)for(let i=0;i<pa.nodes.length;i++){const n=pa.nodes[i];for(const t of['a','b'])if((n[t].x!==n.x||n[t].y!==n.y)&&near(p,n[t]))return{pa,i,t};if(near(p,n))return{pa,i,t:'n'}}return null}
+function finishPath(){if(bez){const g=ensure(selected);if($('mirror').checked&&bez.nodes.length){const m=JSON.parse(JSON.stringify(bez));m.nodes.forEach(n=>{for(const q of[n,n.a,n.b])q.x=700-q.x});g.paths.push(m)}bez=null}refresh()}
+function bezDown(p,e){const g=ensure(selected);
+ if(activeTool==='node'){const h=findNode(g,p);if(!h)return;saveHistory();if(e.altKey&&h.t==='n'){h.pa.nodes.splice(h.i,1);if(!h.pa.nodes.length)g.paths=g.paths.filter(q=>q!==h.pa);refresh();return}drag=h;return}
+ if(bez&&bez.nodes.length>1&&near(p,bez.nodes[0])){bez.closed=true;finishPath();return}
+ if(!bez){saveHistory();bez={nodes:[],closed:false,color:$('brushColor').value,width:+$('lineWidth').value};g.paths.push(bez)}
+ bez.nodes.push({x:p.x,y:p.y,a:{x:p.x,y:p.y},b:{x:p.x,y:p.y},s:false});drag={pa:bez,i:bez.nodes.length-1,t:'new'};drawGuides()}
+function bezMove(p,e){const{pa,i,t}=drag,n=pa.nodes[i];
+ if(t==='new'){if(Math.hypot(p.x-n.x,p.y-n.y)>3){n.b={x:p.x,y:p.y};n.a={x:2*n.x-p.x,y:2*n.y-p.y};n.s=true}else{n.a={x:n.x,y:n.y};n.b={x:n.x,y:n.y};n.s=false}}
+ else if(t==='n'){const dx=p.x-n.x,dy=p.y-n.y;n.x=p.x;n.y=p.y;n.a.x+=dx;n.a.y+=dy;n.b.x+=dx;n.b.y+=dy}
+ else{n[t]={x:p.x,y:p.y};if(n.s&&!e.shiftKey)n[t==='a'?'b':'a']={x:2*n.x-p.x,y:2*n.y-p.y}}
+ drawGuides()}
+function drawNodes(g){ctx.save();ctx.lineWidth=1.5;for(const pa of g.paths)for(const n of pa.nodes){for(const h of[n.a,n.b]){if(h.x===n.x&&h.y===n.y)continue;ctx.strokeStyle='rgba(139,156,255,.85)';ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(h.x,h.y);ctx.stroke();ctx.fillStyle='#c78bff';ctx.beginPath();ctx.arc(h.x,h.y,5,0,7);ctx.fill()}ctx.fillStyle=pa===bez&&n===pa.nodes[0]?'#6fe0a8':'#fff';ctx.strokeStyle='#7c8cff';ctx.fillRect(n.x-5,n.y-5,10,10);ctx.strokeRect(n.x-5,n.y-5,10,10)}ctx.restore()}
+canvas.addEventListener('dblclick',e=>{const g=ensure(selected),p=point(e);
+ if(activeTool==='bezier'&&bez){const n=bez.nodes;if(n.length>1&&near(n[n.length-1],n[n.length-2],6))n.pop();finishPath();return}
+ if(activeTool==='node'){const h=findNode(g,p);if(!h||h.t!=='n')return;saveHistory();const nd=h.pa.nodes,n=nd[h.i];
+  if(n.s||n.a.x!==n.x||n.a.y!==n.y){n.a={x:n.x,y:n.y};n.b={x:n.x,y:n.y};n.s=false}
+  else{const pr=nd[(h.i-1+nd.length)%nd.length],nx=nd[(h.i+1)%nd.length];let dx=nx.x-pr.x,dy=nx.y-pr.y;const d=Math.hypot(dx,dy)||1,L=Math.min(60,d/3);dx=dx/d*L;dy=dy/d*L;n.b={x:n.x+dx,y:n.y+dy};n.a={x:n.x-dx,y:n.y-dy};n.s=true}
+  refresh()}});
+document.addEventListener('keydown',e=>{if(bez&&(e.key==='Enter'||e.key==='Escape')){e.preventDefault();finishPath()}});
+// kerning
+function renderKern(){const l=$('kernList');l.innerHTML='';for(const[k,v]of Object.entries(kern)){const b=document.createElement('button');b.textContent=k+'  '+(v>0?'+':'')+v;b.onclick=()=>{$('kernPair').value=k;$('kernVal').value=v;$('kernValue').textContent=v};b.ondblclick=()=>{delete kern[k];renderKern();updatePreview()};l.appendChild(b)}}
+$('kernPair').oninput=()=>{const p=[...$('kernPair').value];if(p.length===2){const v=kern[p.join('')]||0;$('kernVal').value=v;$('kernValue').textContent=v}};
+$('kernVal').oninput=()=>{const v=+$('kernVal').value,p=[...$('kernPair').value];$('kernValue').textContent=v;if(p.length!==2){setStatus('Type two letters (like AV) first to set a kerning pair.');return}const k=p.join('');if(v)kern[k]=v;else delete kern[k];renderKern();updatePreview()};
+function addKern(buf,pairs){
+ if(!pairs.length)return buf;pairs.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+ const n=pairs.length,es=Math.floor(Math.log2(n)),sr=6*2**es,kb=new Uint8Array(18+6*n),kv=new DataView(kb.buffer);
+ [[0,0],[2,1],[4,0],[6,14+6*n],[8,1],[10,n],[12,sr],[14,es],[16,6*n-sr]].forEach(([o,v])=>kv.setUint16(o,v));
+ pairs.forEach((p,i)=>{kv.setUint16(18+i*6,p[0]);kv.setUint16(20+i*6,p[1]);kv.setInt16(22+i*6,p[2])});
+ const src=new DataView(buf),nt=src.getUint16(4),recs=[];
+ for(let i=0;i<nt;i++){const o=12+i*16,tag=String.fromCharCode(src.getUint8(o),src.getUint8(o+1),src.getUint8(o+2),src.getUint8(o+3));if(tag!=='kern')recs.push({tag,d:new Uint8Array(buf,src.getUint32(o+8),src.getUint32(o+12))})}
+ recs.push({tag:'kern',d:kb});recs.sort((a,b)=>a.tag<b.tag?-1:1);
+ const c=recs.length,pad=l=>(l+3)&~3,out=new Uint8Array(12+16*c+recs.reduce((t,r)=>t+pad(r.d.length),0)),dv=new DataView(out.buffer);
+ const sum=(o,l)=>{let t=0;for(let i=0;i<l;i+=4)t=(t+((out[o+i]<<24|out[o+i+1]<<16|out[o+i+2]<<8|out[o+i+3])>>>0))>>>0;return t};
+ const e2=Math.floor(Math.log2(c));dv.setUint32(0,src.getUint32(0));dv.setUint16(4,c);dv.setUint16(6,16*2**e2);dv.setUint16(8,e2);dv.setUint16(10,16*c-16*2**e2);
+ let pos=12+16*c,headPos=0;
+ recs.forEach((r,i)=>{out.set(r.d,pos);if(r.tag==='head'){headPos=pos;dv.setUint32(pos+8,0)}const o=12+i*16;for(let k=0;k<4;k++)dv.setUint8(o+k,r.tag.charCodeAt(k));dv.setUint32(o+4,sum(pos,pad(r.d.length)));dv.setUint32(o+8,pos);dv.setUint32(o+12,r.d.length);pos+=pad(r.d.length)});
+ if(headPos)dv.setUint32(headPos+8,(0xB1B0AFBA-sum(0,out.length))>>>0);
+ return out.buffer}
+// custom character sets
+const parseChars=t=>[...new Set([...t].filter(c=>/[\p{L}\p{N}\p{P}\p{S}\p{M}]/u.test(c)))].slice(0,800);
+$('addCustom').onclick=()=>{const add=parseChars($('customChars').value);if(!add.length){setStatus('Type or paste the characters you want to add first.');return}chars=[...new Set([...chars,...add])];chars.forEach(ensure);$('customChars').value='';selectChar(add[0]);setStatus(add.length+' character(s) added.')};
+$('uploadSet').onclick=()=>$('setFile').click();
+$('setFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const set=parseChars(await f.text());if(!set.length)throw 0;chars=set;chars.forEach(ensure);selectChar(chars[0]);setStatus(chars.length+' characters loaded from '+f.name+'.')}catch(err){setStatus('Could not read any characters from that file. Use a plain .txt file.')}e.target.value=''};
 function syncMode(){$('modeVector').classList.toggle('active',mode==='vector');$('modePixel').classList.toggle('active',mode==='pixel');$('modeRaster').classList.toggle('active',mode==='raster');$('gridWrap').hidden=mode!=='pixel';$('softWrap').hidden=mode!=='raster';$('gridSize').value=cell;canvas.style.cursor=mode==='pixel'?'cell':'crosshair';drawGuides()}
 $('modeVector').onclick=()=>{mode='vector';syncMode();setStatus('Vector mode: smooth freehand strokes.')};
 $('modePixel').onclick=()=>{mode='pixel';syncMode();setStatus('Pixel mode: click or drag to fill squares.')};
 $('modeRaster').onclick=()=>{mode='raster';syncMode();setStatus('Raster mode: soft anti-aliased painting on a bitmap. Use Softness for feathered edges. It is converted to outlines on export.')};
 $('gridSize').onchange=()=>{cell=+$('gridSize').value;drawGuides()};
-selectChar('A');syncMode();renderList();updatePreview();
+selectChar('A');syncMode();renderKern();renderList();updatePreview();
 })();
 </script>
 </body>
