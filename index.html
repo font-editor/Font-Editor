@@ -9,11 +9,11 @@
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="author" content="Font Editor">
 <meta name="google-site-verification" content="ZtVycQlusjRtvdn0XZOq64ukSrI-ftkZyAIsRpB0E6o" />
-<link rel="canonical" href="https://font-editor.github.io/Font-Editor/">
-<meta property="og:url" content="https://font-editor.github.io/Font-Editor/">
+<link rel="canonical" href="https://USERNAME.github.io/REPO-NAME/">
+<meta property="og:url" content="https://USERNAME.github.io/REPO-NAME/">
 <meta property="og:site_name" content="Font Editor">
-<meta property="og:image" content="https://font-editor.github.io/Font-Editor/og-image.png">
-<meta name="twitter:image" content="https://font-editor.github.io/Font-Editor/og-image.png">
+<meta property="og:image" content="https://USERNAME.github.io/REPO-NAME/og-image.png">
+<meta name="twitter:image" content="https://USERNAME.github.io/REPO-NAME/og-image.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Font Editor – Free Online Font Maker (Vector and Pixel)">
 <meta property="og:description" content="Draw vector or pixel letters, design a typeface, and export your custom font as a TTF file.">
@@ -266,13 +266,27 @@ function shapePoints(a,b,tool){
  if(tool==='ellipse'){const pts=[];for(let i=0;i<=48;i++){const t=i/48*Math.PI*2;pts.push({x:(left+right)/2+Math.cos(t)*(right-left)/2,y:(top+bottom)/2+Math.sin(t)*(bottom-top)/2})}return pts}
  return [a,b];
 }
+let lastE=null;
+// Partial eraser: cuts strokes where the eraser touches and keeps the rest.
+function eraseVec(a,b){
+ const g=ensure(selected),rad=Math.max(10,+$('lineWidth').value*1.2),m=$('mirror').checked;
+ const n=Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/(rad/2))||1,cs=[];
+ for(let t=0;t<=n;t++){const x=a.x+(b.x-a.x)*t/n,y=a.y+(b.y-a.y)*t/n;cs.push({x,y});if(m)cs.push({x:700-x,y})}
+ const out=[];
+ for(const s of g.strokes){
+  const lim=rad+s.width/2,step=Math.max(2,lim/3),dense=[];
+  s.points.forEach((p,i)=>{if(i){const q=s.points[i-1],k=Math.ceil(Math.hypot(p.x-q.x,p.y-q.y)/step);for(let j=1;j<k;j++)dense.push({x:q.x+(p.x-q.x)*j/k,y:q.y+(p.y-q.y)*j/k})}dense.push(p)});
+  const hit=p=>cs.some(c=>Math.hypot(p.x-c.x,p.y-c.y)<lim);
+  if(!dense.some(hit)){out.push(s);continue}
+  let cur=null;
+  for(const p of dense){if(hit(p)){cur=null}else{if(!cur){cur={points:[],color:s.color,width:s.width};out.push(cur)}cur.points.push(p)}}
+ }
+ g.strokes=out;drawGuides();
+}
 canvas.addEventListener('pointerdown',e=>{
  e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=point(e);
  if(mode!=='vector'){saveHistory();drawing=true;shapeStart=p;if(activeTool==='pen'||activeTool==='eraser')paintPath([p,p],activeTool==='eraser');else shapePreview={points:[p,p],color:'#8b9cff',width:2};drawGuides();return}
- if(activeTool==='eraser'){
-  saveHistory();const g=ensure(selected);const rad=Math.max(18,+$('lineWidth').value*1.8),pm=mir(p),hit=q=>Math.hypot(q.x-p.x,q.y-p.y)<rad||($('mirror').checked&&Math.hypot(q.x-pm.x,q.y-pm.y)<rad);g.strokes=g.strokes.filter(s=>!s.points.some(hit));
-  drawGuides();renderList();updatePreview();return;
- }
+ if(activeTool==='eraser'){saveHistory();drawing=true;lastE=p;eraseVec(p,p);return}
  saveHistory();drawing=true;shapeStart=p;
  currentStroke={points:[p],color:$('brushColor').value,width:+$('lineWidth').value};
  if(activeTool==='pen'){ensure(selected).strokes.push(currentStroke);mirrorStroke=null;if($('mirror').checked){mirrorStroke={points:[mir(p)],color:currentStroke.color,width:currentStroke.width};ensure(selected).strokes.push(mirrorStroke)}}
@@ -281,6 +295,7 @@ canvas.addEventListener('pointerdown',e=>{
 });
 canvas.addEventListener('pointermove',e=>{
  if(!drawing)return;const p=point(e);
+ if(mode==='vector'&&activeTool==='eraser'){eraseVec(lastE,p);lastE=p;return}
  if(mode!=='vector'){if(activeTool==='pen'||activeTool==='eraser'){paintPath([shapeStart,p],activeTool==='eraser');shapeStart=p}else{shapePreview={points:shapePoints(shapeStart,p,activeTool),color:'#8b9cff',width:2};drawGuides()}return}
  if(activeTool==='pen'){currentStroke.points.push(p);if(mirrorStroke)mirrorStroke.points.push(mir(p))}
  else {shapePreview={points:shapePoints(shapeStart,p,activeTool),color:currentStroke.color,width:currentStroke.width};}
