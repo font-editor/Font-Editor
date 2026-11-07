@@ -685,3 +685,1111 @@ function eraseVec(a,b){
   }
   g.strokes=out;drawGuides();
 }
+canvas.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  canvas.setPointerCapture(e.pointerId);
+  const p=point(e);
+
+  if(mode==='vector'&&(activeTool==='bezier'||activeTool==='node')){
+    bezDown(p,e);return;
+  }
+
+  if(mode!=='vector'){
+    saveHistory();drawing=true;shapeStart=p;
+    if(activeTool==='pen'||activeTool==='eraser'){
+      paintPath([p,p],activeTool==='eraser');
+    }else{
+      shapePreview={points:[p,p],color:'#8b9cff',width:2};
+    }
+    drawGuides();return;
+  }
+
+  if(activeTool==='eraser'){
+    saveHistory();drawing=true;lastE=p;eraseVec(p,p);return;
+  }
+
+  saveHistory();drawing=true;shapeStart=p;
+  currentStroke={
+    points:[p],
+    color:$('brushColor').value,
+    width:+$('lineWidth').value
+  };
+
+  if(activeTool==='pen'){
+    ensure(selected).strokes.push(currentStroke);
+    mirrorStroke=null;
+    if($('mirror').checked){
+      mirrorStroke={
+        points:[mir(p)],
+        color:currentStroke.color,
+        width:currentStroke.width
+      };
+      ensure(selected).strokes.push(mirrorStroke);
+    }
+  }else{
+    shapePreview={
+      points:[p,p],
+      color:currentStroke.color,
+      width:currentStroke.width
+    };
+  }
+  drawGuides();
+});
+
+canvas.addEventListener('pointermove',e=>{
+  if(drag){bezMove(point(e),e);return}
+  if(!drawing)return;
+  const p=point(e);
+
+  if(mode==='vector'&&activeTool==='eraser'){
+    eraseVec(lastE,p);lastE=p;return;
+  }
+
+  if(mode!=='vector'){
+    if(activeTool==='pen'||activeTool==='eraser'){
+      paintPath([shapeStart,p],activeTool==='eraser');
+      shapeStart=p;
+    }else{
+      shapePreview={
+        points:shapePoints(shapeStart,p,activeTool),
+        color:'#8b9cff',
+        width:2
+      };
+      drawGuides();
+    }
+    return;
+  }
+
+  if(activeTool==='pen'){
+    currentStroke.points.push(p);
+    if(mirrorStroke)mirrorStroke.points.push(mir(p));
+  }else{
+    shapePreview={
+      points:shapePoints(shapeStart,p,activeTool),
+      color:currentStroke.color,
+      width:currentStroke.width
+    };
+  }
+  drawGuides();
+});
+
+function stop(e){
+  if(drag){drag=null;refresh();return}
+
+  if(drawing&&mode!=='vector'){
+    if(activeTool!=='pen'&&activeTool!=='eraser'&&shapeStart){
+      paintPath(shapePoints(shapeStart,e?point(e):shapeStart,activeTool),false);
+    }
+    drawing=false;currentStroke=null;shapeStart=null;shapePreview=null;
+    drawGuides();renderList();updatePreview();return;
+  }
+
+  if(drawing&&activeTool==='pen'&&$('smooth').checked){
+    currentStroke.points=smoothPts(currentStroke.points);
+    if(mirrorStroke)mirrorStroke.points=smoothPts(mirrorStroke.points);
+  }
+
+  if(drawing&&activeTool!=='pen'&&shapeStart){
+    const p=e?point(e):shapeStart;
+    const pts=shapePoints(shapeStart,p,activeTool),g=ensure(selected);
+    g.strokes.push({
+      points:pts,
+      color:currentStroke.color,
+      width:currentStroke.width
+    });
+    if($('mirror').checked){
+      g.strokes.push({
+        points:pts.map(mir),
+        color:currentStroke.color,
+        width:currentStroke.width
+      });
+    }
+  }
+
+  mirrorStroke=null;
+  drawing=false;currentStroke=null;shapeStart=null;shapePreview=null;
+  drawGuides();renderList();updatePreview();
+}
+
+canvas.addEventListener('pointerup',stop);
+canvas.addEventListener('pointercancel',stop);
+canvas.addEventListener('lostpointercapture',()=>{
+  if(drawing)stop();
+});
+
+document.querySelectorAll('.tool').forEach(btn=>{
+  btn.onclick=()=>{
+    activeTool=btn.dataset.tool;
+    document.querySelectorAll('.tool').forEach(b=>
+      b.classList.toggle('active',b===btn)
+    );
+    if((activeTool==='bezier'||activeTool==='node')&&mode!=='vector'){
+      mode='vector';syncMode();
+    }
+    if(activeTool!=='bezier'&&bez)finishPath();
+    setStatus(hints[activeTool]||'Selected '+activeTool+' tool.');
+    drawGuides();
+  };
+});
+
+$('undoBtn').onclick=()=>{
+  if(!history.length)return;
+  glyphs[selected]=JSON.parse(history.pop());
+  drawGuides();renderList();updatePreview();
+};
+
+$('clearBtn').onclick=()=>{
+  saveHistory();
+  glyphs[selected]=blank();
+  drawGuides();renderList();updatePreview();
+  setStatus('Character cleared.');
+};
+
+// -------------------------------------------------------
+// IMAGE IMPORT: turns an uploaded image into a font glyph
+// -------------------------------------------------------
+
+$('uploadImageBtn').onclick=()=>{
+  $('imageLetterInput').click();
+};
+
+$('imageLetterInput').onchange=e=>{
+  const file=e.target.files[0];
+  if(!file)return;
+
+  if(!file.type.startsWith('image/')){
+    setStatus('Please select a valid image.');
+    e.target.value='';
+    return;
+  }
+
+  const img=new Image();
+  const url=URL.createObjectURL(file);
+
+  img.onload=()=>{
+    try{
+      const temp=document.createElement('canvas');
+      temp.width=N;
+      temp.height=N;
+
+      const tctx=temp.getContext('2d',{
+        willReadFrequently:true
+      });
+
+      // Fit the image inside the character drawing area.
+      const maxWidth=520;
+      const maxHeight=420;
+      const scale=Math.min(
+        maxWidth/img.width,
+        maxHeight/img.height
+      );
+
+      const width=img.width*scale;
+      const height=img.height*scale;
+
+      // Center the image and align its bottom to the baseline.
+      const x=(N-width)/2;
+      const y=510-height;
+
+      tctx.clearRect(0,0,N,N);
+      tctx.imageSmoothingEnabled=true;
+      tctx.imageSmoothingQuality='high';
+      tctx.drawImage(img,x,y,width,height);
+
+      // Convert the image into a monochrome bitmap.
+      const imageData=tctx.getImageData(0,0,N,N);
+      const pixels=imageData.data;
+      const bits=new Bits(N*N);
+
+      for(let i=0;i<N*N;i++){
+        const alpha=pixels[i*4+3];
+
+        // Transparent parts of the image remain empty.
+        if(alpha>30){
+          bits[i]=255;
+        }
+      }
+
+      // Save the previous glyph so Undo works.
+      saveHistory();
+
+      // Replace the selected character with the imported image.
+      const g=ensure(selected);
+      g.strokes=[];
+      g.cells=[];
+      g.paths=[];
+      g.bits=bits;
+
+      // Refresh everything.
+      drawGuides();
+      renderList();
+      updatePreview();
+
+      setStatus(
+        'Image imported successfully as character "'+
+        selected+'".'
+      );
+
+    }catch(err){
+      console.error(err);
+      setStatus('Could not import this image.');
+    }
+
+    URL.revokeObjectURL(url);
+    e.target.value='';
+  };
+
+  img.onerror=()=>{
+    setStatus('Could not open this image.');
+    URL.revokeObjectURL(url);
+    e.target.value='';
+  };
+
+  img.src=url;
+};
+
+$('guides').onchange=drawGuides;
+$('lineWidth').oninput=()=>
+  $('lineWidthValue').textContent=$('lineWidth').value;
+
+function transformGlyph(fn,cf,bf){
+  saveHistory();
+  const g=ensure(selected);
+  g.strokes.forEach(s=>s.points=s.points.map(fn));
+  g.paths.forEach(pa=>pa.nodes.forEach(n=>{
+    const q=fn({x:n.x,y:n.y}),a=fn(n.a),b=fn(n.b);
+    n.x=q.x;n.y=q.y;n.a=a;n.b=b;
+  }));
+  if(cf)g.cells=g.cells.map(cf);
+  if(bf&&g.bits)g.bits=bf(g.bits);
+  drawGuides();renderList();updatePreview();
+}
+
+$('flipH').onclick=()=>transformGlyph(
+  p=>({x:700-p.x,y:p.y}),
+  k=>({...k,x:700-k.x-k.s}),
+  r=>warp(r,(i,j)=>[N-1-i,j])
+);
+
+$('flipV').onclick=()=>{
+  const c=ensure(selected).cells;
+  const t=Math.min(...c.map(k=>k.y));
+  const b=Math.max(...c.map(k=>k.y+k.s));
+  const gb=ensure(selected).bits;
+  const bb=gb?bbox(gb):{y0:0,y1:N-1};
+
+  transformGlyph(
+    p=>({x:p.x,y:700-p.y}),
+    k=>({...k,y:t+b-k.y-k.s}),
+    r=>warp(r,(i,j)=>[i,bb.y0+bb.y1-j])
+  );
+};
+
+$('centerGlyph').onclick=()=>{
+  const g0=ensure(selected);
+  const pts=allStrokes(g0).flatMap(s=>s.points)
+    .concat(g0.cells.flatMap(k=>[
+      {x:k.x,y:k.y},{x:k.x+k.s,y:k.y+k.s}
+    ]))
+    .concat(g0.bits&&g0.bits.some(v=>v)?
+      (bb=>[
+        {x:bb.x0,y:bb.y0},
+        {x:bb.x1+1,y:bb.y1+1}
+      ])(bbox(g0.bits)):[]
+    );
+
+  if(!pts.length)return;
+
+  const minX=Math.min(...pts.map(p=>p.x));
+  const maxX=Math.max(...pts.map(p=>p.x));
+  const minY=Math.min(...pts.map(p=>p.y));
+  const maxY=Math.max(...pts.map(p=>p.y));
+  const dx=350-(minX+maxX)/2;
+  const dy=430-(minY+maxY)/2;
+
+  transformGlyph(
+    p=>({x:p.x+dx,y:p.y+dy}),
+    k=>({
+      ...k,
+      x:k.x+Math.round(dx/k.s)*k.s,
+      y:k.y+Math.round(dy/k.s)*k.s
+    }),
+    r=>warp(r,(i,j)=>[
+      i-Math.round(dx),
+      j-Math.round(dy)
+    ])
+  );
+};
+
+function scaleGlyph(f){
+  const pts=allStrokes(ensure(selected)).flatMap(s=>s.points);
+
+  if(!pts.length){
+    const gb=ensure(selected).bits;
+    if(gb&&gb.some(v=>v)){
+      const bb=bbox(gb);
+      const cx=(bb.x0+bb.x1)/2;
+      const cy=(bb.y0+bb.y1)/2;
+      transformGlyph(
+        p=>p,
+        null,
+        r=>warp(r,(i,j)=>[
+          Math.round(cx+(i-cx)/f),
+          Math.round(cy+(j-cy)/f)
+        ])
+      );
+      return;
+    }
+
+    if(ensure(selected).cells.length){
+      setStatus('Pixel drawings cannot be scaled. Try a different pixel size instead.');
+    }
+    return;
+  }
+
+  const cx=pts.reduce((n,p)=>n+p.x,0)/pts.length;
+  const cy=pts.reduce((n,p)=>n+p.y,0)/pts.length;
+  transformGlyph(p=>({
+    x:cx+(p.x-cx)*f,
+    y:cy+(p.y-cy)*f
+  }));
+}
+
+$('scaleUp').onclick=()=>scaleGlyph(1.12);
+$('scaleDown').onclick=()=>scaleGlyph(.88);
+
+$('advance').oninput=()=>{
+  $('advanceValue').textContent=$('advance').value;
+  ensure(selected).advance=+$('advance').value;
+  drawGuides();updatePreview();
+};
+
+$('prevChar').onclick=()=>{
+  selectChar(chars[Math.max(0,chars.indexOf(selected)-1)]);
+};
+
+$('nextChar').onclick=()=>{
+  selectChar(chars[Math.min(chars.length-1,chars.indexOf(selected)+1)]);
+};
+
+$('addChars').onclick=()=>{
+  const sets={
+    basic,
+    uppercase:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    lowercase:"abcdefghijklmnopqrstuvwxyz",
+    numbers:"0123456789",
+    latinext:basic+"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿĆČŠŽĐćčšžđ"
+  };
+
+  chars=[...new Set(sets[$('charSet').value].split(''))];
+  chars.forEach(ensure);
+  selectChar(chars[0]);
+  setStatus('Character set loaded.');
+};
+
+$('previewText').oninput=updatePreview;
+
+function updatePreview(){
+  const out=$('previewOutput');
+  out.innerHTML='';
+  const K=2;
+  let prev='';
+
+  for(const ch of $('previewText').value){
+    const kv=(kern[prev+ch]||0)*.00145;
+    prev=ch;
+
+    if(ch==='\n'){
+      out.appendChild(document.createElement('br'));
+      continue;
+    }
+
+    const g=glyphs[ch];
+
+    if(has(g)){
+      const adv=g.advance||700;
+      const c=document.createElement('canvas');
+      c.width=adv*.12*K;
+      c.height=120*K;
+      c.style.height='1.45em';
+      c.style.width='auto';
+      c.style.verticalAlign='middle';
+
+      const x=c.getContext('2d');
+      x.scale(K,K);
+      x.strokeStyle='#eef2fc';
+      x.fillStyle='#eef2fc';
+      x.lineCap='round';
+      x.lineJoin='round';
+
+      const px=p=>(p.x-350)*.12/.7+adv*.06;
+      const py=p=>p.y*120/700;
+
+      for(const s of allStrokes(g)){
+        x.lineWidth=Math.max(1,s.width*.12/.7);
+        x.beginPath();
+        s.points.forEach((p,i)=>
+          i?x.lineTo(px(p),py(p)):x.moveTo(px(p),py(p))
+        );
+        if(s.points.length===1){
+          x.lineTo(px(s.points[0])+.1,py(s.points[0]));
+        }
+        x.stroke();
+      }
+
+      for(const k of g.cells){
+        x.fillRect(
+          px({x:k.x}),
+          py({y:k.y}),
+          k.s*.12/.7,
+          k.s*120/700
+        );
+      }
+
+      if(g.bits){
+        x.imageSmoothingQuality='high';
+        x.drawImage(glyphCanvas(g.bits),px({x:0}),0,120,120);
+      }
+
+      c.style.marginLeft=kv+'em';
+      out.appendChild(c);
+    }else{
+      const span=document.createElement('span');
+      span.textContent=ch===' '?'  ':ch;
+      span.style.opacity='.35';
+      span.style.marginLeft=kv+'em';
+      out.appendChild(span);
+    }
+  }
+}
+
+// Separate canvas for preview bitmaps.
+function glyphCanvas(bits){
+  const previewCanvas=document.createElement('canvas');
+  previewCanvas.width=N;
+  previewCanvas.height=N;
+  const pctx=previewCanvas.getContext('2d');
+  const im=pctx.createImageData(N,N);
+  const u=new Uint32Array(im.data.buffer);
+
+  for(let i=0;i<bits.length;i++){
+    if(bits[i])u[i]=((bits[i]<<24)|0xFFF4F2)>>>0;
+  }
+
+  pctx.putImageData(im,0,0);
+  return previewCanvas;
+}
+
+function project(){
+  return{
+    version:2,
+    fontName:$('fontName').value,
+    chars,
+    glyphs,
+    mode,
+    cell,
+    kern
+  };
+}
+
+$('saveProject').onclick=()=>{
+  const blob=new Blob([JSON.stringify(project())],{
+    type:'application/json'
+  });
+  download(blob,($('fontName').value||'font')+'.fontproject.json');
+  setStatus('Project saved.');
+};
+
+$('loadProject').onclick=()=>$('projectFile').click();
+
+$('projectFile').onchange=async e=>{
+  const f=e.target.files[0];
+  if(!f)return;
+
+  try{
+    const p=JSON.parse(await f.text());
+    chars=p.chars;
+    glyphs=p.glyphs;
+    for(const c in glyphs)ensure(c);
+    mode=p.mode||'vector';
+    cell=p.cell||30;
+    kern=p.kern||{};
+    renderKern();
+    syncMode();
+    $('fontName').value=p.fontName||'MyCustomFont';
+    selectChar(chars[0]||'A');
+    setStatus('Project loaded.');
+  }catch(err){
+    setStatus('Could not load that project file.');
+  }
+
+  e.target.value='';
+};
+
+function download(blob,name){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+function glyphPath(g){
+  const path=new opentype.Path(),adv=g.advance||700;
+  const cv=p=>({
+    x:(p.x-350)/.7+adv/2,
+    y:(510-p.y)/.7
+  });
+
+  const poly=pts=>{
+    pts.forEach((p,i)=>
+      i?path.lineTo(p.x,p.y):path.moveTo(p.x,p.y)
+    );
+    path.close();
+  };
+
+  const dot=(c,r)=>poly(
+    Array.from({length:16},(_,i)=>{
+      const t=i/16*Math.PI*2;
+      return{
+        x:c.x+Math.cos(t)*r,
+        y:c.y+Math.sin(t)*r
+      };
+    })
+  );
+
+  for(const s of allStrokes(g)){
+    const r=Math.max(2,s.width/.7/2);
+    const raw=(s.points||[]).map(cv);
+    if(!raw.length)continue;
+
+    const pts=[raw[0]];
+    for(let i=1;i<raw.length;i++){
+      const l=pts[pts.length-1];
+      if(Math.hypot(raw[i].x-l.x,raw[i].y-l.y)>=Math.max(4,r*.35)){
+        pts.push(raw[i]);
+      }
+    }
+
+    const e=raw[raw.length-1],l=pts[pts.length-1];
+    if(l!==e&&(e.x!==l.x||e.y!==l.y))pts.push(e);
+
+    // Every piece is wound the same way, so overlaps merge into one solid stroke.
+    pts.forEach((p,i)=>{
+      dot(p,r);
+      if(i){
+        const a=pts[i-1];
+        const dx=p.x-a.x,dy=p.y-a.y,d=Math.hypot(dx,dy)||1;
+        const nx=-dy/d*r,ny=dx/d*r;
+        poly([
+          {x:a.x-nx,y:a.y-ny},
+          {x:p.x-nx,y:p.y-ny},
+          {x:p.x+nx,y:p.y+ny},
+          {x:a.x+nx,y:a.y+ny}
+        ]);
+      }
+    });
+  }
+
+  for(const k of g.cells||[]){
+    const xl=(k.x-350)/.7+adv/2-.5;
+    const xr=(k.x+k.s-350)/.7+adv/2+.5;
+    const yt=(510-k.y)/.7+.5;
+    const yb=(510-k.y-k.s)/.7-.5;
+    poly([
+      {x:xl,y:yb},{x:xr,y:yb},
+      {x:xr,y:yt},{x:xl,y:yt}
+    ]);
+  }
+
+  if(g.bits){
+    for(const[i,j,w,h]of runs(g.bits)){
+      const xl=(i-350)/.7+adv/2-.3;
+      const xr=(i+w-350)/.7+adv/2+.3;
+      const yt=(510-j)/.7+.3;
+      const yb=(510-j-h)/.7-.3;
+      poly([
+        {x:xl,y:yb},{x:xr,y:yb},
+        {x:xr,y:yt},{x:xl,y:yt}
+      ]);
+    }
+  }
+
+  return path;
+}
+
+$('exportBtn').onclick=()=>{
+  if(!window.opentype){
+    setStatus('Font export library did not load. Check your internet connection and reload the page.');
+    return;
+  }
+
+  try{
+    const name=(
+      $('fontName').value.trim().replace(/[^a-z0-9]/gi,'')||
+      'MyCustomFont'
+    ).slice(0,30);
+
+    const notdef=new opentype.Glyph({
+      name:'.notdef',
+      unicode:0,
+      advanceWidth:700,
+      path:new opentype.Path()
+    });
+
+    const space=new opentype.Glyph({
+      name:'space',
+      unicode:32,
+      advanceWidth:350,
+      path:new opentype.Path()
+    });
+
+    const out=[notdef,space];
+    const seen=new Set([0,32]),idx={32:1};
+
+    for(const ch of chars){
+      const cp=ch.codePointAt(0);
+      if(seen.has(cp))continue;
+      seen.add(cp);
+      const g=ensure(ch);
+      idx[cp]=out.length;
+      out.push(new opentype.Glyph({
+        name:'uni'+cp.toString(16).toUpperCase(),
+        unicode:cp,
+        advanceWidth:g.advance||700,
+        path:glyphPath(g)
+      }));
+    }
+
+    const pairs=Object.entries(kern).map(([k,v])=>{
+      const[l,r]=[...k];
+      return[
+        idx[l.codePointAt(0)],
+        idx[r.codePointAt(0)],
+        v
+      ];
+    }).filter(x=>x[0]!=null&&x[1]!=null&&x[2]);
+
+    const font=new opentype.Font({
+      familyName:$('fontName').value.trim()||'My Custom Font',
+      styleName:'Regular',
+      unitsPerEm:1000,
+      ascender:800,
+      descender:-200,
+      glyphs:out
+    });
+
+    download(
+      new Blob([addKern(font.toArrayBuffer(),pairs)],{
+        type:'font/ttf'
+      }),
+      name+'.ttf'
+    );
+
+    setStatus('Font exported! Install the TTF file to use it in other apps.');
+  }catch(err){
+    console.error(err);
+    setStatus('Export failed: '+err.message);
+  }
+};
+
+const hints={
+  bezier:'Bezier: click to add points, click and drag to pull curve handles. Click the first point to close the shape. Double-click or press Enter to finish.',
+  node:'Edit nodes: drag points and handles. Double-click a point to switch sharp/smooth. Alt-click a point to delete it. Shift keeps handles independent.'
+};
+
+const refresh=()=>{
+  drawGuides();
+  renderList();
+  updatePreview();
+};
+
+const near=(p,q,r=9)=>Math.hypot(p.x-q.x,p.y-q.y)<r;
+
+function findNode(g,p){
+  for(const pa of g.paths){
+    for(let i=0;i<pa.nodes.length;i++){
+      const n=pa.nodes[i];
+      for(const t of['a','b']){
+        if((n[t].x!==n.x||n[t].y!==n.y)&&near(p,n[t])){
+          return{pa,i,t};
+        }
+      }
+      if(near(p,n))return{pa,i,t:'n'};
+    }
+  }
+  return null;
+}
+
+function finishPath(){
+  if(bez){
+    const g=ensure(selected);
+    if($('mirror').checked&&bez.nodes.length){
+      const m=JSON.parse(JSON.stringify(bez));
+      m.nodes.forEach(n=>{
+        for(const q of[n,n.a,n.b])q.x=700-q.x;
+      });
+      g.paths.push(m);
+    }
+    bez=null;
+  }
+  refresh();
+}
+
+function bezDown(p,e){
+  const g=ensure(selected);
+
+  if(activeTool==='node'){
+    const h=findNode(g,p);
+    if(!h)return;
+    saveHistory();
+
+    if(e.altKey&&h.t==='n'){
+      h.pa.nodes.splice(h.i,1);
+      if(!h.pa.nodes.length){
+        g.paths=g.paths.filter(q=>q!==h.pa);
+      }
+      refresh();return;
+    }
+
+    drag=h;return;
+  }
+
+  if(bez&&bez.nodes.length>1&&near(p,bez.nodes[0])){
+    bez.closed=true;
+    finishPath();return;
+  }
+
+  if(!bez){
+    saveHistory();
+    bez={
+      nodes:[],
+      closed:false,
+      color:$('brushColor').value,
+      width:+$('lineWidth').value
+    };
+    g.paths.push(bez);
+  }
+
+  bez.nodes.push({
+    x:p.x,y:p.y,
+    a:{x:p.x,y:p.y},
+    b:{x:p.x,y:p.y},
+    s:false
+  });
+
+  drag={pa:bez,i:bez.nodes.length-1,t:'new'};
+  drawGuides();
+}
+
+function bezMove(p,e){
+  const{pa,i,t}=drag,n=pa.nodes[i];
+
+  if(t==='new'){
+    if(Math.hypot(p.x-n.x,p.y-n.y)>3){
+      n.b={x:p.x,y:p.y};
+      n.a={x:2*n.x-p.x,y:2*n.y-p.y};
+      n.s=true;
+    }else{
+      n.a={x:n.x,y:n.y};
+      n.b={x:n.x,y:n.y};
+      n.s=false;
+    }
+  }else if(t==='n'){
+    const dx=p.x-n.x,dy=p.y-n.y;
+    n.x=p.x;n.y=p.y;
+    n.a.x+=dx;n.a.y+=dy;
+    n.b.x+=dx;n.b.y+=dy;
+  }else{
+    n[t]={x:p.x,y:p.y};
+    if(n.s&&!e.shiftKey){
+      n[t==='a'?'b':'a']={x:2*n.x-p.x,y:2*n.y-p.y};
+    }
+  }
+
+  drawGuides();
+}
+
+function drawNodes(g){
+  ctx.save();
+  ctx.lineWidth=1.5;
+
+  for(const pa of g.paths){
+    for(const n of pa.nodes){
+      for(const h of[n.a,n.b]){
+        if(h.x===n.x&&h.y===n.y)continue;
+        ctx.strokeStyle='rgba(139,156,255,.85)';
+        ctx.beginPath();
+        ctx.moveTo(n.x,n.y);
+        ctx.lineTo(h.x,h.y);
+        ctx.stroke();
+
+        ctx.fillStyle='#c78bff';
+        ctx.beginPath();
+        ctx.arc(h.x,h.y,5,0,7);
+        ctx.fill();
+      }
+
+      ctx.fillStyle=pa===bez&&n===pa.nodes[0]?'#6fe0a8':'#fff';
+      ctx.strokeStyle='#7c8cff';
+      ctx.fillRect(n.x-5,n.y-5,10,10);
+      ctx.strokeRect(n.x-5,n.y-5,10,10);
+    }
+  }
+
+  ctx.restore();
+}
+
+canvas.addEventListener('dblclick',e=>{
+  const g=ensure(selected),p=point(e);
+
+  if(activeTool==='bezier'&&bez){
+    const n=bez.nodes;
+    if(n.length>1&&near(n[n.length-1],n[n.length-2],6))n.pop();
+    finishPath();return;
+  }
+
+  if(activeTool==='node'){
+    const h=findNode(g,p);
+    if(!h||h.t!=='n')return;
+
+    saveHistory();
+    const nd=h.pa.nodes,n=nd[h.i];
+
+    if(n.s||n.a.x!==n.x||n.a.y!==n.y){
+      n.a={x:n.x,y:n.y};
+      n.b={x:n.x,y:n.y};
+      n.s=false;
+    }else{
+      const pr=nd[(h.i-1+nd.length)%nd.length];
+      const nx=nd[(h.i+1)%nd.length];
+      let dx=nx.x-pr.x,dy=nx.y-pr.y;
+      const d=Math.hypot(dx,dy)||1,L=Math.min(60,d/3);
+      dx=dx/d*L;dy=dy/d*L;
+      n.b={x:n.x+dx,y:n.y+dy};
+      n.a={x:n.x-dx,y:n.y-dy};
+      n.s=true;
+    }
+
+    refresh();
+  }
+});
+
+document.addEventListener('keydown',e=>{
+  if(bez&&(e.key==='Enter'||e.key==='Escape')){
+    e.preventDefault();
+    finishPath();
+  }
+});
+
+// Kerning
+function renderKern(){
+  const l=$('kernList');
+  l.innerHTML='';
+
+  for(const[k,v]of Object.entries(kern)){
+    const b=document.createElement('button');
+    b.textContent=k+'  '+(v>0?'+':'')+v;
+    b.onclick=()=>{
+      $('kernPair').value=k;
+      $('kernVal').value=v;
+      $('kernValue').textContent=v;
+    };
+    b.ondblclick=()=>{
+      delete kern[k];
+      renderKern();
+      updatePreview();
+    };
+    l.appendChild(b);
+  }
+}
+
+$('kernPair').oninput=()=>{
+  const p=[...$('kernPair').value];
+  if(p.length===2){
+    const v=kern[p.join('')]||0;
+    $('kernVal').value=v;
+    $('kernValue').textContent=v;
+  }
+};
+
+$('kernVal').oninput=()=>{
+  const v=+$('kernVal').value,p=[...$('kernPair').value];
+  $('kernValue').textContent=v;
+
+  if(p.length!==2){
+    setStatus('Type two letters (like AV) first to set a kerning pair.');
+    return;
+  }
+
+  const k=p.join('');
+  if(v)kern[k]=v;
+  else delete kern[k];
+
+  renderKern();
+  updatePreview();
+};
+
+function addKern(buf,pairs){
+  if(!pairs.length)return buf;
+  pairs.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+
+  const n=pairs.length,es=Math.floor(Math.log2(n)),sr=6*2**es;
+  const kb=new Uint8Array(18+6*n),kv=new DataView(kb.buffer);
+
+  [[0,0],[2,1],[4,0],[6,14+6*n],[8,1],[10,n],[12,sr],[14,es],[16,6*n-sr]]
+    .forEach(([o,v])=>kv.setUint16(o,v));
+
+  pairs.forEach((p,i)=>{
+    kv.setUint16(18+i*6,p[0]);
+    kv.setUint16(20+i*6,p[1]);
+    kv.setInt16(22+i*6,p[2]);
+  });
+
+  const src=new DataView(buf),nt=src.getUint16(4),recs=[];
+
+  for(let i=0;i<nt;i++){
+    const o=12+i*16;
+    const tag=String.fromCharCode(
+      src.getUint8(o),src.getUint8(o+1),
+      src.getUint8(o+2),src.getUint8(o+3)
+    );
+    if(tag!=='kern'){
+      recs.push({
+        tag,
+        d:new Uint8Array(buf,src.getUint32(o+8),src.getUint32(o+12))
+      });
+    }
+  }
+
+  recs.push({tag:'kern',d:kb});
+  recs.sort((a,b)=>a.tag<b.tag?-1:1);
+
+  const c=recs.length;
+  const pad=l=>(l+3)&~3;
+  const out=new Uint8Array(
+    12+16*c+recs.reduce((t,r)=>t+pad(r.d.length),0)
+  );
+  const dv=new DataView(out.buffer);
+
+  const sum=(o,l)=>{
+    let t=0;
+    for(let i=0;i<l;i+=4){
+      t=(t+(
+        (out[o+i]<<24|out[o+i+1]<<16|out[o+i+2]<<8|out[o+i+3])>>>0
+      ))>>>0;
+    }
+    return t;
+  };
+
+  const e2=Math.floor(Math.log2(c));
+  dv.setUint32(0,src.getUint32(0));
+  dv.setUint16(4,c);
+  dv.setUint16(6,16*2**e2);
+  dv.setUint16(8,e2);
+  dv.setUint16(10,16*c-16*2**e2);
+
+  let pos=12+16*c,headPos=0;
+
+  recs.forEach((r,i)=>{
+    out.set(r.d,pos);
+    if(r.tag==='head'){
+      headPos=pos;
+      dv.setUint32(pos+8,0);
+    }
+
+    const o=12+i*16;
+    for(let k=0;k<4;k++)dv.setUint8(o+k,r.tag.charCodeAt(k));
+    dv.setUint32(o+4,sum(pos,pad(r.d.length)));
+    dv.setUint32(o+8,pos);
+    dv.setUint32(o+12,r.d.length);
+    pos+=pad(r.d.length);
+  });
+
+  if(headPos){
+    dv.setUint32(headPos+8,(0xB1B0AFBA-sum(0,out.length))>>>0);
+  }
+
+  return out.buffer;
+}
+
+// Custom character sets
+const parseChars=t=>[
+  ...new Set([...t].filter(c=>/[\p{L}\p{N}\p{P}\p{S}\p{M}]/u.test(c)))
+].slice(0,800);
+
+$('addCustom').onclick=()=>{
+  const add=parseChars($('customChars').value);
+  if(!add.length){
+    setStatus('Type or paste the characters you want to add first.');
+    return;
+  }
+
+  chars=[...new Set([...chars,...add])];
+  chars.forEach(ensure);
+  $('customChars').value='';
+  selectChar(add[0]);
+  setStatus(add.length+' character(s) added.');
+};
+
+$('uploadSet').onclick=()=>$('setFile').click();
+
+$('setFile').onchange=async e=>{
+  const f=e.target.files[0];
+  if(!f)return;
+
+  try{
+    const set=parseChars(await f.text());
+    if(!set.length)throw 0;
+    chars=set;
+    chars.forEach(ensure);
+    selectChar(chars[0]);
+    setStatus(chars.length+' characters loaded from '+f.name+'.');
+  }catch(err){
+    setStatus('Could not read any characters from that file. Use a plain .txt file.');
+  }
+
+  e.target.value='';
+};
+
+function syncMode(){
+  $('modeVector').classList.toggle('active',mode==='vector');
+  $('modePixel').classList.toggle('active',mode==='pixel');
+  $('modeRaster').classList.toggle('active',mode==='raster');
+  $('gridWrap').hidden=mode!=='pixel';
+  $('softWrap').hidden=mode!=='raster';
+  $('gridSize').value=cell;
+  canvas.style.cursor=mode==='pixel'?'cell':'crosshair';
+  drawGuides();
+}
+
+$('modeVector').onclick=()=>{
+  mode='vector';syncMode();
+  setStatus('Vector mode: smooth freehand strokes.');
+};
+
+$('modePixel').onclick=()=>{
+  mode='pixel';syncMode();
+  setStatus('Pixel mode: click or drag to fill squares.');
+};
+
+$('modeRaster').onclick=()=>{
+  mode='raster';syncMode();
+  setStatus('Raster mode: soft anti-aliased painting on a bitmap. Use Softness for feathered edges. It is converted to outlines on export.');
+};
+
+$('gridSize').onchange=()=>{
+  cell=+$('gridSize').value;
+  drawGuides();
+};
+
+selectChar('A');
+syncMode();
+renderKern();
+renderList();
+updatePreview();
+
+})();
+</script>
+</body>
+</html>
