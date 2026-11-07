@@ -1,4 +1,4 @@
-const MODEL = "@cf/meta/llama-3.2-11b-vision-instruct";
+const MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct";
 const ALLOWED_ORIGIN = "https://font-editor.github.io";
 
 const corsHeaders = {
