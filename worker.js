@@ -1,258 +1,463 @@
+const MODEL = "@cf/meta/llama-3.2-11b-vision-instruct";
+const ALLOWED_ORIGIN = "https://font-editor.github.io";
+
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://font-editor.github.io",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
-  "Content-Type": "application/json"
+  "Access-Control-Max-Age": "86400"
 };
 
-function response(data, status = 200) {
+function reply(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: corsHeaders
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store"
+    }
   });
+}
+
+function getModelText(result) {
+  if (typeof result === "string") return result;
+  if (typeof result?.response === "string") return result.response;
+  if (typeof result?.result === "string") return result.result;
+  throw new Error("The AI model returned an empty response.");
+}
+
+function parseJSON(text) {
+  let cleaned = text.trim();
+
+  cleaned = cleaned
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+
+  try {
+    return JSON.parse(cleaned);
+  } catch (_) {
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+
+    if (start === -1 || end === -1 || end <= start) {
+      throw new Error("The AI did not return valid JSON. Try again.");
+    }
+
+    return JSON.parse(cleaned.slice(start, end + 1));
+  }
+}
+
+function validateGlyphs(data, allowedCharacters = null) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("Invalid glyph data.");
+  }
+
+  const result = {};
+
+  for (const [character, glyph] of Object.entries(data).slice(0, 40)) {
+    if (
+      typeof character !== "string" ||
+      [...character].length !== 1 ||
+      !glyph ||
+      typeof glyph !== "object"
+    ) {
+      continue;
+    }
+
+    if (allowedCharacters && !allowedCharacters.includes(character)) {
+      continue;
+    }
+
+    const strokes = Array.isArray(glyph.strokes)
+      ? glyph.strokes.slice(0, 8)
+      : [];
+
+    const cleanStrokes = strokes.map(stroke => ({
+      width: Math.max(2, Math.min(35, Number(stroke.width) || 12)),
+      color: "#f2f4ff",
+      points: (Array.isArray(stroke.points) ? stroke.points : [])
+        .slice(0, 30)
+        .map(point => ({
+          x: Math.max(0, Math.min(700, Number(point.x) || 0)),
+          y: Math.max(0, Math.min(700, Number(point.y) || 0))
+        }))
+    })).filter(stroke => stroke.points.length > 0);
+
+    if (cleanStrokes.length) {
+      result[character] = {
+        advance: Math.max(
+          250,
+          Math.min(1000, Number(glyph.advance) || 700)
+        ),
+        strokes: cleanStrokes
+      };
+    }
+  }
+
+  return result;
+}
+
+async function askAI(env, prompt, image = null, maxTokens = 5000) {
+  if (!env.AI || typeof env.AI.run !== "function") {
+    throw new Error(
+      'Workers AI binding is missing. Add a Workers AI binding named "AI".'
+    );
+  }
+
+  const input = {
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an expert typeface designer. " +
+          "You create clean, consistent, readable font glyphs. " +
+          "Follow the requested JSON format exactly. " +
+          "Do not include explanations, markdown, or code fences."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    max_tokens: maxTokens,
+    temperature: 0.25
+  };
+
+  if (image) {
+    input.image = image;
+  }
+
+  const result = await env.AI.run(MODEL, input);
+  return parseJSON(getModelText(result));
 }
 
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders });
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders
+      });
     }
 
     if (request.method !== "POST") {
-      return response({ error: "Use POST." }, 405);
+      return reply({ error: "Use POST for AI requests." }, 405);
     }
 
-    if (!env.OPENAI_API_KEY) {
-      return response({ error: "The OPENAI_API_KEY secret is missing." }, 500);
+    const origin = request.headers.get("Origin");
+
+    if (origin && origin !== ALLOWED_ORIGIN) {
+      return reply({ error: "This website is not allowed to use this Worker." }, 403);
     }
 
     try {
+      const contentLength = Number(
+        request.headers.get("Content-Length") || 0
+      );
+
+      if (contentLength > 8 * 1024 * 1024) {
+        return reply({ error: "Request is too large." }, 413);
+      }
+
       const body = await request.json();
       const action = body.action;
 
-      if (!["generate", "scan", "edit", "check"].includes(action)) {
-        return response({ error: "Unknown AI action." }, 400);
+      if (!action) {
+        return reply({ error: "Missing AI action." }, 400);
       }
 
-      let instructions = "";
-      let input = [];
+      // --------------------------------------------
+      // GENERATE GLYPHS FROM EXISTING SAMPLE LETTERS
+      // --------------------------------------------
 
       if (action === "generate") {
-        const samples = Array.isArray(body.samples) ? body.samples.slice(0, 5) : [];
-        const targets = Array.isArray(body.targets) ? body.targets.slice(0, 12) : [];
+        const samples = Array.isArray(body.samples)
+          ? body.samples.slice(0, 5)
+          : [];
 
-        if (!samples.length || !targets.length) {
-          return response({ error: "Provide sample letters and target letters." }, 400);
+        const targets = Array.isArray(body.targets)
+          ? [...new Set(body.targets)]
+              .filter(c => typeof c === "string" && [...c].length === 1)
+              .slice(0, 24)
+          : [];
+
+        if (samples.length < 1) {
+          return reply({ error: "Draw at least one sample character." }, 400);
         }
 
-        instructions = `
-You are an expert typeface designer.
-Create missing font glyphs that match the supplied sample glyphs.
+        if (!targets.length) {
+          return reply({ error: "No target characters were provided." }, 400);
+        }
 
-The canvas coordinate system is 700 by 700.
-Coordinates must be between 0 and 700.
-Use strokes made from points. Each stroke has:
-- points: an array of {x,y}
-- width: a number between 2 and 35
-- color: a CSS color string
+        const prompt = `
+Create font glyphs for these target characters:
 
-Preserve the visual style, proportions, stroke thickness and slant of the samples.
-Do not simply copy a sample letter.
-Create readable, distinct glyphs.
-Return one glyph for every requested target character.
-Use a reasonable advance width between 300 and 700.
+${JSON.stringify(targets)}
+
+Use the supplied sample glyphs as the style reference:
+
+${JSON.stringify(samples)}
+
+Each glyph must use this exact structure:
+
+{
+  "glyphs": {
+    "A": {
+      "advance": 700,
+      "strokes": [
+        {
+          "width": 12,
+          "color": "#f2f4ff",
+          "points": [
+            {"x": 100, "y": 500},
+            {"x": 200, "y": 300}
+          ]
+        }
+      ]
+    }
+  }
+}
+
+Rules:
+- Return every requested target character when possible.
+- Keep the same visual style as the samples.
+- Coordinates must be between 0 and 700.
+- Use a coordinate system where smaller y values are higher.
+- Make letters readable and recognizable.
+- Use 1 to 8 strokes per character.
+- Each stroke should have 2 to 30 points.
+- Keep the design inside the drawing area.
+- Return JSON only.
 `;
 
-        input = [{
-          role: "user",
-          content: [{
-            type: "input_text",
-            text: JSON.stringify({ samples, targets })
-          }]
-        }];
+        const result = await askAI(env, prompt, null, 5000);
+        const glyphs = validateGlyphs(result.glyphs, targets);
+
+        if (!Object.keys(glyphs).length) {
+          throw new Error("The AI could not generate usable glyphs. Try again.");
+        }
+
+        return reply({ glyphs });
       }
+
+      // --------------------------------------------
+      // READ HANDWRITING FROM AN UPLOADED IMAGE
+      // --------------------------------------------
 
       if (action === "scan") {
-        if (!body.image || typeof body.image !== "string") {
-          return response({ error: "No image was supplied." }, 400);
+        const image = body.image;
+
+        const targets = Array.isArray(body.targets)
+          ? [...new Set(body.targets)]
+              .filter(c => typeof c === "string" && [...c].length === 1)
+              .slice(0, 24)
+          : [];
+
+        if (
+          typeof image !== "string" ||
+          !/^data:image\/(png|jpeg|webp);base64,/i.test(image)
+        ) {
+          return reply({
+            error: "Please provide a PNG, JPG or WebP image."
+          }, 400);
         }
 
-        const targets = Array.isArray(body.targets) ? body.targets.slice(0, 80) : [];
+        if (image.length > 7 * 1024 * 1024) {
+          return reply({ error: "The image is too large." }, 413);
+        }
 
-        instructions = `
-You are a handwriting recognition and font glyph extraction assistant.
-Inspect the supplied handwriting sheet and identify the requested characters.
-The sheet may contain handwritten letters arranged in rows or boxes.
-Return a separate glyph for each character you can confidently identify.
+        if (!targets.length) {
+          return reply({ error: "No missing characters were provided." }, 400);
+        }
 
-Represent each glyph as vector strokes in a 700 by 700 coordinate system.
-Coordinates must be between 0 and 700.
-Each stroke must contain points [{x,y}, ...], width, and color.
-Use a maximum of 8 strokes per glyph and 30 points per stroke.
-Keep the glyph centered and preserve the handwriting style.
-If a character cannot be identified, omit it rather than inventing it.
+        const prompt = `
+Examine the supplied handwriting/font sheet image.
+
+Extract these characters if they are visible:
+
+${JSON.stringify(targets)}
+
+Create a separate glyph for each recognizable target character.
+
+Return this exact JSON structure:
+
+{
+  "glyphs": {
+    "A": {
+      "advance": 700,
+      "strokes": [
+        {
+          "width": 12,
+          "color": "#f2f4ff",
+          "points": [
+            {"x": 100, "y": 500},
+            {"x": 200, "y": 300}
+          ]
+        }
+      ]
+    }
+  }
+}
+
+Rules:
+- Only return characters you can recognize in the image.
+- Do not invent characters that are not visible.
+- Coordinates must be between 0 and 700.
+- Smaller y values mean higher positions.
+- Use 1 to 8 strokes per character.
+- Each stroke must have 2 to 30 points.
+- Approximate the visible letter shapes as closely as possible.
+- Return JSON only.
 `;
 
-        input = [{
-          role: "user",
-          content: [
-            {
-              type: "input_text",
-              text: "Extract these characters from the handwriting sheet: " + targets.join(" ")
-            },
-            {
-              type: "input_image",
-              image_url: body.image
-            }
-          ]
-        }];
+        const result = await askAI(env, prompt, image, 5000);
+        const glyphs = validateGlyphs(result.glyphs, targets);
+
+        if (!Object.keys(glyphs).length) {
+          throw new Error(
+            "No recognizable characters were found. Try a clearer image."
+          );
+        }
+
+        return reply({ glyphs });
       }
+
+      // --------------------------------------------
+      // EDIT EXISTING GLYPHS USING TEXT INSTRUCTIONS
+      // --------------------------------------------
 
       if (action === "edit") {
-        const glyphs = body.glyphs || {};
-        const instruction = String(body.instruction || "").slice(0, 1000);
+        const instruction = String(body.instruction || "").trim();
 
-        if (!instruction.trim()) {
-          return response({ error: "Enter an editing instruction." }, 400);
+        if (!instruction) {
+          return reply({ error: "Enter an editing instruction." }, 400);
         }
 
-        instructions = `
-You are editing vector font glyphs.
-Apply the user's instruction while preserving the identity and readability of each character.
-Coordinates must remain between 0 and 700.
-Return the complete edited glyphs, not descriptions.
+        if (instruction.length > 500) {
+          return reply({
+            error: "Keep your editing instruction under 500 characters."
+          }, 400);
+        }
+
+        const original = body.glyphs;
+
+        if (!original || typeof original !== "object") {
+          return reply({ error: "No glyphs were supplied." }, 400);
+        }
+
+        const characters = Object.keys(original).slice(0, 24);
+
+        if (!characters.length) {
+          return reply({ error: "No characters were supplied." }, 400);
+        }
+
+        const prompt = `
+Edit the supplied font glyphs according to this instruction:
+
+${instruction}
+
+Current glyph data:
+
+${JSON.stringify(original)}
+
+Return the edited glyphs using this exact JSON structure:
+
+{
+  "glyphs": {
+    "A": {
+      "advance": 700,
+      "strokes": [
+        {
+          "width": 12,
+          "color": "#f2f4ff",
+          "points": [
+            {"x": 100, "y": 500},
+            {"x": 200, "y": 300}
+          ]
+        }
+      ]
+    }
+  }
+}
+
+Rules:
+- Return the edited versions of the supplied characters.
+- Preserve the original character identities.
+- Follow the instruction while keeping letters readable.
+- Keep the overall font style consistent.
+- Coordinates must be between 0 and 700.
+- Use 1 to 8 strokes per character.
+- Each stroke must have 2 to 30 points.
+- Return JSON only.
 `;
 
-        input = [{
-          role: "user",
-          content: [{
-            type: "input_text",
-            text: JSON.stringify({ instruction, glyphs })
-          }]
-        }];
+        const result = await askAI(env, prompt, null, 5000);
+        const glyphs = validateGlyphs(result.glyphs, characters);
+
+        if (!Object.keys(glyphs).length) {
+          throw new Error("The AI could not edit the supplied glyphs.");
+        }
+
+        return reply({ glyphs });
       }
+
+      // --------------------------------------------
+      // CHECK GLYPHS AND SUGGEST IMPROVEMENTS
+      // --------------------------------------------
 
       if (action === "check") {
-        const glyphs = body.glyphs || {};
+        const glyphs = body.glyphs;
 
-        instructions = `
-You are a professional typeface quality checker.
-Inspect the supplied glyph data for consistency.
-Look for inconsistent stroke widths, unusual advances, missing glyphs,
-extreme proportions and likely readability issues.
-Return a concise list of actionable suggestions.
+        if (!glyphs || typeof glyphs !== "object") {
+          return reply({ error: "No glyphs were supplied." }, 400);
+        }
+
+        const prompt = `
+Review this font data:
+
+${JSON.stringify(glyphs)}
+
+Look for:
+- Inconsistent stroke thickness.
+- Characters that may be difficult to recognize.
+- Uneven proportions.
+- Inconsistent character widths.
+- Characters that may need spacing adjustments.
+- Possible style inconsistencies.
+
+Return this exact JSON structure:
+
+{
+  "suggestions": [
+    "Suggestion one.",
+    "Suggestion two."
+  ]
+}
+
+Give useful, specific suggestions.
 Do not modify the glyphs.
+Return JSON only.
 `;
 
-        input = [{
-          role: "user",
-          content: [{
-            type: "input_text",
-            text: JSON.stringify(glyphs)
-          }]
-        }];
+        const result = await askAI(env, prompt, null, 1500);
+
+        const suggestions = Array.isArray(result.suggestions)
+          ? result.suggestions
+              .filter(v => typeof v === "string")
+              .slice(0, 12)
+          : [];
+
+        return reply({ suggestions });
       }
 
-      const schema = action === "check"
-        ? {
-            type: "object",
-            properties: {
-              suggestions: {
-                type: "array",
-                items: { type: "string" }
-              }
-            },
-            required: ["suggestions"],
-            additionalProperties: false
-          }
-        : {
-            type: "object",
-            properties: {
-              glyphs: {
-                type: "object",
-                additionalProperties: {
-                  type: "object",
-                  properties: {
-                    advance: { type: "number" },
-                    strokes: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          width: { type: "number" },
-                          color: { type: "string" },
-                          points: {
-                            type: "array",
-                            items: {
-                              type: "object",
-                              properties: {
-                                x: { type: "number" },
-                                y: { type: "number" }
-                              },
-                              required: ["x", "y"],
-                              additionalProperties: false
-                            }
-                          }
-                        },
-                        required: ["width", "color", "points"],
-                        additionalProperties: false
-                      }
-                    }
-                  },
-                  required: ["advance", "strokes"],
-                  additionalProperties: false
-                }
-              }
-            },
-            required: ["glyphs"],
-            additionalProperties: false
-          };
+      return reply({ error: "Unknown AI action: " + action }, 400);
 
-      const apiResponse = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: env.OPENAI_MODEL || "gpt-5.5",
-          instructions,
-          input,
-          text: {
-            format: {
-              type: "json_schema",
-              name: action === "check" ? "font_check" : "font_glyphs",
-              strict: true,
-              schema
-            }
-          }
-        })
-      });
-
-      const result = await apiResponse.json();
-
-      if (!apiResponse.ok) {
-        return response({
-          error: result.error?.message || "The AI request failed."
-        }, apiResponse.status);
-      }
-
-      const outputText = (result.output || [])
-        .flatMap(item => item.content || [])
-        .filter(item => item.type === "output_text")
-        .map(item => item.text)
-        .join("");
-
-      if (!outputText) {
-        return response({ error: "The AI returned an empty response." }, 502);
-      }
-
-      const parsed = JSON.parse(outputText);
-
-      return response(parsed);
     } catch (error) {
-      return response({
-        error: error.message || "Unexpected Worker error."
+      console.error("Font Editor AI error:", error);
+
+      return reply({
+        error: error?.message || "An unexpected AI error occurred."
       }, 500);
     }
   }
